@@ -1,0 +1,571 @@
+\documentclass[fleqn,xcolor=pdftex,dvipsnames,table]{beamer}
+
+\input{boilerPlateUW}
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\beamer@sectionintoc}{\vskip1.5em}{\vskip1.3em}{}{}
+\makeatother
+
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       % sectionstyle=<style for current section>/<style for other sections>
+       % subsectionstyle=<style for current subsection>/<style for other subsections in current section>/<style for subsections in other sections>
+       \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/show/hide]
+   \end{frame}
+}
+\AtBeginSubsection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       % sectionstyle=<style for current section>/<style for other sections>
+       % subsectionstyle=<style for current subsection>/<style for other subsections in current section>/<style for subsections in other sections>
+       \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
+   \end{frame}
+}
+
+\title{Getting started with quantstrat}
+\author{\href{http://faculty.washington.edu/gyollin/}{Guy Yollin}}
+\date{R/Finance 2015}
+\institute[Copyright \copyright \ 2015]{}
+%\logo{\includegraphics[width=0.25in]{logo}}
+
+<<echo=FALSE>>=
+#########################################################################
+# Copyright (C) 2011-2015 Guy Yollin                                    #
+# License: http://www.gnu.org/licenses/gpl.html GPL version 2 or higher #
+#########################################################################
+@
+<<include=FALSE>>=
+library(knitr)
+opts_chunk$set(tidy=FALSE,cache=FALSE,size='scriptsize',
+  fig.path='figures/',fig.show='hide',fig.keep='last',
+  fig.align='center',	fig.width=7,	fig.height=5,
+  message=FALSE,warning=FALSE)
+@
+<<echo=FALSE,cache=FALSE>>=
+options(width=81,continue=" ",digits=8)
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\normalem
+\lstset{language=Pascal,basicstyle=\scriptsize,tabsize=2}
+
+%\frame{\titlepage}
+\begin{frame}
+\vb
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
+\begin{center}
+\includegraphics[width=0.9\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vspace{2.0\baselineskip}
+\LARGE {\textbf{Getting started with quantstrat}} \\ \vspace{2.0\baselineskip}
+\large{Guy Yollin} \\ \vq
+\scriptsize{Applied Mathematics\\University of Washington}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+\frametitle{Download data}
+<<>>=
+library(PerformanceAnalytics)
+library(quantmod)
+library(lattice)
+startDate <- '2010-01-01'  # start of data
+endDate <-  '2015-05-01'   # end of data
+Sys.setenv(TZ="UTC")       # set time zone
+symbols = c("XLF", "XLP", "XLE", "XLY", "XLV", "XLI", "XLB", "XLK", "XLU")
+@
+\vm
+<<echo=FALSE>>=
+if(file.exists("XLX.RData"))
+{
+  load("XLX.RData")
+} else {
+  getSymbols(symbols, from=startDate, to=endDate, index.class="POSIXct")
+  for(symbol in symbols) {
+      x<-get(symbol)
+      x<-adjustOHLC(x,symbol.name=symbol)
+      x<-to.weekly(x,indexAt='lastof',drop.time=TRUE)
+      indexFormat(x)<-'%Y-%m-%d'
+      colnames(x)<-gsub("x",symbol,colnames(x))
+      assign(symbol,x)
+  }
+  save(list=symbols,file="XLX.RData")
+}
+@
+<<eval=FALSE>>=
+  getSymbols(symbols, from=startDate, to=endDate, index.class="POSIXct")
+  for(symbol in symbols) {
+      x<-get(symbol)
+      x<-adjustOHLC(x,symbol.name=symbol)
+      x<-to.weekly(x,indexAt='lastof',drop.time=TRUE)
+      indexFormat(x)<-'%Y-%m-%d'
+      colnames(x)<-gsub("x",symbol,colnames(x))
+      assign(symbol,x)
+  }
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Compute returns}
+<<plotETF,echo=TRUE, fig.keep='all', tidy=FALSE>>=
+prices <- NULL
+for(i in 1:length(symbols))
+  prices <- cbind(prices,Cl(get(symbols[i])))
+colnames(prices) <- symbols
+returns <- diff(log(prices))[-1, ]
+num.ass <- ncol(returns)
+
+xyplot(prices, xlab = "", layout = c(3, 3),type=c("l","g"))
+
+stacked.df <- stack(as.data.frame(returns))
+colnames(stacked.df) <- c("returns", "symbol")
+
+densityplot(~returns | symbol, stacked.df, cex = 0.25, xlab="",type=c("l","g"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Calculate and plot Bollinger bands}
+<<XLFBB,cache=FALSE>>=
+args(BBands)
+b <- BBands(HLC=HLC(XLF["2013"]), n=20, sd=2)
+tail(b)
+myTheme<-chart_theme()
+myTheme$col$dn.col<-'lightblue'
+myTheme$col$dn.border <- 'lightgray'
+myTheme$col$up.border <- 'lightgray'
+chart_Series(XLF,TA='add_BBands(lwd=2)',theme=myTheme,name="XLF")
+@
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Basic quantstrat strategy example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+\frametitle{Initialize instruments}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow1}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+library(quantstrat)
+initDate <- '2009-12-31'
+initEq <- 1e6
+currency("USD")
+stock(symbols, currency="USD",multiplier=1)
+@
+\begin{itemize}
+  \item Initialize currency instrument first and then stock instrument
+  \item Important that portfolio, account, and orderbook initialization date be before start of data
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Initialize portfolio, account, and orders object}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow2}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+rm.strat("multiAsset.bb1") # remove portfolio, account, orderbook if re-run
+initPortf(name="multiAsset.bb1", symbols, initDate=initDate)
+initAcct(name="multiAsset.bb1", portfolios="multiAsset.bb1",
+  initDate=initDate, initEq=initEq)
+initOrders(portfolio="multiAsset.bb1", initDate=initDate)
+@
+<<results='hide'>>=
+strategy("bbands", store=TRUE)
+@
+\begin{itemize}
+  \item The function \texttt{rm.strat} removes any existing portfolio, account, or orderbook objects which facilitates re-running the code
+  \item The function \texttt{strategy} initializes and new strategy object
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Define indicators}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow3}
+\end{center} \vspace{-1.5\baselineskip}
+<<>>=
+args(BBands)
+@
+<<results='hide'>>=
+add.indicator("bbands", name = "BBands",
+  arguments = list(HLC = quote(HLC(mktdata)), maType='SMA'), label='bbInd')
+@
+\begin{itemize}
+  \item Note that n and sd are not included in the indicator arguments list
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Define signals}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow3}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+add.signal("bbands", name="sigCrossover",
+  arguments=list(columns=c("High","up"),relationship="gt"),
+  label="H.gt.UpperBand")
+@
+<<results='hide'>>=
+add.signal("bbands", name="sigCrossover",
+  arguments=list(columns=c("Low","dn"),relationship="lt"),
+  label="L.lt.LowerBand")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Add rules}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow3}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+add.rule("bbands", name='ruleSignal',
+  arguments=list(sigcol="H.gt.UpperBand",sigval=TRUE,
+    orderqty=+100, ordertype='market', orderside='long'),
+  type='enter',
+  label='LongEntry')
+@
+<<results='hide'>>=
+add.rule("bbands", name='ruleSignal',
+  arguments=list(sigcol="L.lt.LowerBand",sigval=TRUE,
+    orderqty= 'all', ordertype='market', orderside='long'),
+  type='exit',
+  label='LongExit')
+@
+\begin{itemize}
+  \item Long-only channel breakout system with pyramiding
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Data integrity check}
+<<size='Tiny'>>=
+checkBlotterUpdate <- function(port.st,account.st,verbose=TRUE)
+{
+  ok <- TRUE
+  p <- getPortfolio(port.st)
+  a <- getAccount(account.st)
+  syms <- names(p$symbols)
+  port.tot <- sum(sapply(syms,FUN = function(x) eval(parse(
+    text=paste("sum(p$symbols",x,"posPL.USD$Net.Trading.PL)",sep="$")))))
+  port.sum.tot <- sum(p$summary$Net.Trading.PL)
+  if( !isTRUE(all.equal(port.tot,port.sum.tot)) ) {
+    ok <- FALSE
+    if( verbose )
+      print("portfolio P&L doesn't match sum of symbols P&L")
+  }
+  initEq <- as.numeric(first(a$summary$End.Eq))
+  endEq <- as.numeric(last(a$summary$End.Eq))
+  if( !isTRUE(all.equal(port.tot,endEq-initEq)) ) {
+    ok <- FALSE
+    if( verbose )
+      print("portfolio P&L doesn't match account P&L")
+  }
+  if( sum(duplicated(index(p$summary))) ) {
+    ok <- FALSE
+    if( verbose )
+      print("duplicate timestamps in portfolio summary")
+  }
+  if( sum(duplicated(index(a$summary))) ) {
+    ok <- FALSE
+    if( verbose )
+      print("duplicate timestamps in account summary")
+  }
+  return(ok)
+}
+@
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Position sizing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Position Sizing Methods}
+There are 5 primary position sizing scenarios: \vh
+\begin{itemize}
+  \item Fixed order size with rules that prohibit pyramiding \vh
+  \item Fixed order size with rules that allow pyramiding (no fixed position size) \vh
+  \item Order size and position limit controlled via \texttt{addPosLimit} \vh
+  \item Order size controlled via user-supplied order sizing function
+  \begin{itemize}
+    \item \texttt{osFUN} argument of \texttt{ruleSignal}
+  \end{itemize} \vh
+  \item Order/position size determined as a percent of account equity
+  \begin{itemize}
+    \item \texttt{applyStrategy.rebalancing}
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Position limits}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Position limits and levels}
+\begin{itemize}
+  \item Position limits are set for the portfolio as a run-time parameter \vb
+  \item The function \texttt{osMaxPos} implements simple levels\footnote[frame,2]{The level is the number of pyramiding orders needed to reach the position limit} based maximum positions \vb
+  \item The position sizing function \texttt{osMaxPos} must be passed via the \texttt{osFUN} argument of \texttt{ruleSignal} \vb
+  \item The maximum position and levels are accessed via the functions \texttt{addPosLimit} and \texttt{getPosLimit}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{ruleSignal} function}
+\texttt{ruleSignal} is the default rule to generate a trade order on a signal \\
+<<>>=
+args(ruleSignal)
+@
+\textmd{Main arguments:}
+\begin{mydescription}{ordertype}
+  \item [sigcol] column name to check for signal
+  \item [sigval] signal value to match
+  \item [orderqty] quantity for order or 'all', modified by osFUN
+  \item [ordertype] "market","limit","stoplimit","stoptrailing","iceberg"
+  \item [orderside] "long", "short", or NULL
+  \item [osFUN] function or name of order sizing function (default is osNoOp)
+\end{mydescription}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Add rules with an order sizing function specified}
+<<results='hide'>>=
+enable.rule("bbands",type="enter",label="LongEntry",enabled=FALSE)
+@
+<<results='hide'>>=
+add.rule("bbands", name='ruleSignal',
+  arguments=list(sigcol="H.gt.UpperBand",sigval=TRUE,
+    orderqty=+100, ordertype='market', orderside='long',
+    osFUN='osMaxPos'),
+  type='enter',
+  label='LimitedLongEntry')
+@
+\begin{itemize}
+  \item Use function \texttt{enable.rule} to enable and disable strategy rules
+  \item The \texttt{ruleSignal} argument \texttt{osFUN} is set to \texttt{osMaxPos}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{addPosLimit} function}
+The function \texttt{addPosLimit} adds position and level limits to a strategy \\
+<<>>=
+args(addPosLimit)
+@
+\vh
+\textmd{Main arguments:}
+\begin{mydescription}{longlevels}
+  \item [portfolio] text name of the portfolio
+  \item [symbol] instrument identifier
+  \item [maxpos] maximum long position size
+  \item [longlevels] number of levels
+\end{mydescription}
+\begin{itemize}
+  \item Setting levels to 1 results in an order size of the maximum size
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Initialize portfolio and add position limits}
+Position limits apply to individual assets in the portfolio
+<<results='hide'>>=
+rm.strat("multi.bb.limit") # remove portfolio, account, orderbook if re-run
+initPortf(name="multi.bb.limit", symbols, initDate=initDate)
+initAcct(name="multi.bb.limit", portfolios="multi.bb.limit",
+  initDate=initDate, initEq=initEq)
+initOrders(portfolio="multi.bb.limit", initDate=initDate)
+@
+<<>>=
+for(symbol in symbols)
+{
+  addPosLimit("multi.bb.limit", symbol, initDate, 100, 1 )
+}
+@
+\begin{itemize}
+  \item Position limits are separated from the strategy and are a run-time constraint to the portfolio
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Applying, update, and plot}
+<<results='hide'>>=
+out <- applyStrategy("bbands",
+  portfolios="multi.bb.limit",parameters=list(sd=2,n=20))
+@
+<<results='hide'>>=
+updatePortf("multi.bb.limit")
+updateAcct("multi.bb.limit")
+updateEndEq("multi.bb.limit")
+@
+<<>>=
+checkBlotterUpdate("multi.bb.limit","multi.bb.limit")
+@
+<<XLBCPLIM,cache=FALSE>>=
+chart.Posn("multi.bb.limit","XLU",TA="add_BBands(n=20,sd=2)",theme=myTheme)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{BBands strategy for XLU with position limit} \vm
+\begin{center}
+\includegraphics[width=0.95\textwidth,keepaspectratio]{figures/XLBCPLIM-1}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{User-supplied order sizing function}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{osNoOp} function}
+The function \texttt{osNoOp} is the default order sizing function\\
+<<>>=
+args(osNoOp)
+@
+\vh
+\textmd{Main arguments:}
+\begin{mydescription}{timestamp}
+  \item [timestamp] timestamp (coercible into a POSIXct object) that will mark the time of order insertion
+  \item [orderqty] the order quantity; modified by osFUN
+  \item [portfolio] name of the portfolio for the order
+  \item [symbol] symbol of instrument
+  \item [ruletype] one of "risk", "order", "rebalance", "enter", "exit"
+\end{mydescription}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Define order sizing function}
+<<results='hide'>>=
+osFixedDollar <- function(timestamp, orderqty, portfolio, symbol, ruletype, ...)
+{
+  pos <- getPosQty(portfolio, symbol, timestamp)
+  if( isTRUE(all.equal(pos,0)) )
+  {
+    ClosePrice <- as.numeric(Cl(mktdata[timestamp,]))
+    orderqty <- sign(orderqty)*round(tradeSize/ClosePrice,-2)
+  } else {
+    orderqty <- 0
+  }
+  return(orderqty)
+}
+@
+\begin{itemize}
+  \item Fixed dollar order size:
+\begin{equation*}
+  \text{orderqty} = \frac{\text{tradeSize}}{ClosePrice}
+\end{equation*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Add rules with an order sizing function specified}
+<<results='hide'>>=
+enable.rule("bbands",type="enter",label="LimitedLongEntry",enabled=FALSE)
+@
+<<results='hide'>>=
+add.rule("bbands", name='ruleSignal',
+  arguments=list(sigcol="H.gt.UpperBand",sigval=TRUE,
+    orderqty=+100, ordertype='market', orderside='long',
+    osFUN='osFixedDollar'),
+  type='enter',
+  label='FixedLongEntry')
+@
+\begin{itemize}
+  \item Use function \texttt{enable.rule} to enable and disable strategy rules
+  \item The \texttt{ruleSignal} argument \texttt{osFUN} is set to \texttt{osFixedDollar}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Initialize, applying, and update}
+<<results='hide'>>=
+rm.strat("fixed.dollar") # remove portfolio, account, orderbook if re-run
+initPortf(name="fixed.dollar", symbols, initDate=initDate)
+initAcct(name="fixed.dollar", portfolios="fixed.dollar",
+  initDate=initDate, initEq=initEq)
+initOrders(portfolio="fixed.dollar", initDate=initDate)
+@
+<<results='hide'>>=
+tradeSize <- 100000
+out <- applyStrategy("bbands",
+  portfolios="fixed.dollar",parameters=list(sd=2,n=20))
+@
+<<results='hide'>>=
+updatePortf("fixed.dollar")
+updateAcct("fixed.dollar")
+updateEndEq("fixed.dollar")
+@
+<<>>=
+checkBlotterUpdate("fixed.dollar","fixed.dollar")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Per-trade statistics}
+<<echo=FALSE>>=
+options(width=105)
+@
+<<size='tiny'>>=
+perTradeStats("fixed.dollar","XLF")
+@
+<<echo=FALSE>>=
+options(width=82)
+@
+\begin{itemize}
+  \item Each order is approximately \$100,000 in value
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Stop orders}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parameter optimization}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
+\begin{center}
+\includegraphics[width=0.75\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vb
+\url{http://depts.washington.edu/compfin}
+\end{center}
+\end{frame}
+
+\end{document}
+

@@ -1,0 +1,596 @@
+\documentclass[fleqn,xcolor=pdftex,dvipsnames,table]{beamer}
+
+\input{boilerPlateUW}
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\beamer@sectionintoc}{\vskip1.5em}{\vskip1.3em}{}{}
+\makeatother
+
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       % sectionstyle=<style for current section>/<style for other sections>
+       % subsectionstyle=<style for current subsection>/<style for other subsections in current section>/<style for subsections in other sections>
+       \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/show/hide]
+   \end{frame}
+}
+\AtBeginSubsection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       % sectionstyle=<style for current section>/<style for other sections>
+       % subsectionstyle=<style for current subsection>/<style for other subsections in current section>/<style for subsections in other sections>
+       \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
+   \end{frame}
+}
+
+\title{Getting started with quantstrat}
+\author{\href{http://faculty.washington.edu/gyollin/}{Guy Yollin}}
+\date{R/Finance 2015}
+\institute[Copyright \copyright \ 2015]{}
+%\logo{\includegraphics[width=0.25in]{logo}}
+
+<<echo=FALSE>>=
+#########################################################################
+# Copyright (C) 2011-2015 Guy Yollin                                    #
+# License: http://www.gnu.org/licenses/gpl.html GPL version 2 or higher #
+#########################################################################
+@
+<<include=FALSE>>=
+library(knitr)
+opts_chunk$set(tidy=FALSE,cache=FALSE,size='scriptsize',
+  fig.path='figures/',fig.show='hide',fig.keep='last',
+  fig.align='center',	fig.width=7,	fig.height=5,
+  message=FALSE,warning=FALSE)
+@
+<<echo=FALSE,cache=FALSE>>=
+options(width=81,continue=" ",digits=8)
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\normalem
+\lstset{language=Pascal,basicstyle=\scriptsize,tabsize=2}
+
+%\frame{\titlepage}
+\begin{frame}
+\vb
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
+\begin{center}
+\includegraphics[width=0.9\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vspace{2.0\baselineskip}
+\LARGE {\textbf{Getting started with quantstrat}} \\ \vspace{2.0\baselineskip}
+\large{Guy Yollin} \\ \vq
+\scriptsize{Applied Mathematics\\University of Washington}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[fragile]
+\frametitle{Download data}
+<<>>=
+library(PerformanceAnalytics)
+library(quantmod)
+library(lattice)
+startDate <- '2010-01-01'  # start of data
+endDate <-  '2015-05-01'   # end of data
+Sys.setenv(TZ="UTC")       # set time zone
+symbols = c("XLF", "XLP", "XLE", "XLY", "XLV", "XLI", "XLB", "XLK", "XLU")
+@
+\vm
+<<echo=FALSE>>=
+if(file.exists("XLX.RData"))
+{
+  load("XLX.RData")
+} else {
+  getSymbols(symbols, from=startDate, to=endDate, index.class="POSIXct")
+  for(symbol in symbols) {
+      x<-get(symbol)
+      x<-adjustOHLC(x,symbol.name=symbol)
+      x<-to.weekly(x,indexAt='lastof',drop.time=TRUE)
+      indexFormat(x)<-'%Y-%m-%d'
+      colnames(x)<-gsub("x",symbol,colnames(x))
+      assign(symbol,x)
+  }
+  save(list=symbols,file="XLX.RData")
+}
+@
+<<eval=FALSE>>=
+  getSymbols(symbols, from=startDate, to=endDate, index.class="POSIXct")
+  for(symbol in symbols) {
+      x<-get(symbol)
+      x<-adjustOHLC(x,symbol.name=symbol)
+      x<-to.weekly(x,indexAt='lastof',drop.time=TRUE)
+      indexFormat(x)<-'%Y-%m-%d'
+      colnames(x)<-gsub("x",symbol,colnames(x))
+      assign(symbol,x)
+  }
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Compute returns}
+<<plotETF,echo=TRUE, fig.keep='all', tidy=FALSE>>=
+prices <- NULL
+for(i in 1:length(symbols))
+  prices <- cbind(prices,Cl(get(symbols[i])))
+colnames(prices) <- symbols
+returns <- diff(log(prices))[-1, ]
+num.ass <- ncol(returns)
+
+xyplot(prices, xlab = "", layout = c(3, 3),type=c("l","g"))
+
+stacked.df <- stack(as.data.frame(returns))
+colnames(stacked.df) <- c("returns", "symbol")
+
+densityplot(~returns | symbol, stacked.df, cex = 0.25, xlab="",type=c("l","g"))
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Calculate and plot Bollinger bands}
+<<XLFBB,cache=FALSE>>=
+args(BBands)
+b <- BBands(HLC=HLC(XLF["2013"]), n=20, sd=2)
+tail(b)
+myTheme<-chart_theme()
+myTheme$col$dn.col<-'lightblue'
+myTheme$col$dn.border <- 'lightgray'
+myTheme$col$up.border <- 'lightgray'
+chart_Series(XLF,TA='add_BBands(lwd=2)',theme=myTheme,name="XLF")
+@
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Basic quantstrat strategy example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Quantstrat object model}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsObjectModel.png}
+\end{center}
+Generic Signal-Based Strategy Modeling:
+\begin{itemize}
+  \item Instruments contain market data
+  \item Indicators are quantitative values derived from market data
+  \item Interaction between indicators and market data are used to generate signals (e.g. crossovers, thresholds)
+  \item Rules use market data, indicators, signals, and current account/portfolio characteristics to generate orders
+  \item Interaction between orders and market data generates transactions
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Basic strategy backtesting workflow for quantstrat}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/QSflowchart2}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Key \texttt{blotter} functions} \vm
+\begin{scriptsize}
+\begin{center}
+\begin{tabular}{ll}
+  \multicolumn{2}{c}{\color{blue} \textbf{Initialization}} \\ [0.1em] \hline
+  & \\ [-0.9em]
+  initPortf & initializes a portfolio object \\ [0.1em]
+  & \\ [-0.9em]
+  initAcct & initializes an account object \\ [0.1em]
+  & \\ [-0.9em] \\ [-0.6em]
+  \multicolumn{2}{c}{\color{blue} \textbf{Processing}} \\ [0.1em] \hline
+  & \\ [-0.9em]
+  addTxn & add transactions to a portfolio \\ [0.1em]
+  & \\ [-0.9em]
+  updatePortf & calculate P\&L for each symbol for each period \\ [0.1em]
+  & \\ [-0.9em]
+  updateAcct & calculate equity from portfolio data \\ [0.1em]
+  & \\ [-0.9em]
+  updateEndEq & update ending equity for an account \\ [0.1em]
+  & \\ [-0.9em]
+  getEndEq & retrieves the most recent value of the capital account \\ [0.1em]
+  & \\ [-0.9em]
+  getPosQty & gets position at Date \\ [0.1em]
+  & \\ [-0.9em] \\ [-0.6em]
+  \multicolumn{2}{c}{\color{blue} \textbf{Analysis}} \\ [0.1em] \hline
+  & \\ [-0.9em]
+  chart.Posn & chart market data, position size, and cumulative P\&L \\ [0.1em]
+  & \\ [-0.9em]
+  PortfReturns & calculate portfolio instrument returns \\ [0.1em]
+  & \\ [-0.9em]
+  getAccount & get an account object from the .blotter environment \\ [0.1em]
+  & \\ [-0.9em]
+  getPortfolio & get a portfolio object from the .blotter environment \\ [0.1em]
+  & \\ [-0.9em]
+  getTxns & retrieve transactions from a portfolio \\ [0.1em]
+  & \\ [-0.9em]
+  tradeStats & calculate trade statistics  \\ [0.1em]
+  & \\ [-0.9em]
+  perTradeStats & calculate flat to flat per-trade statistics
+\end{tabular}
+\end{center}
+\end{scriptsize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Key \texttt{quantstrat} functions}
+\begin{scriptsize}
+\begin{center}
+\begin{tabular}{ll}
+  \multicolumn{2}{c}{\color{blue} \textbf{Initialization}} \\ [0.1em] \hline
+  & \\ [-0.9em]
+  initOrders & initialize order container \\ [0.1em]
+  & \\ [-0.9em]
+  strategy & constructor for strategy object \\ [0.1em]
+  & \\ [-0.9em] \\
+  \multicolumn{2}{c}{\color{blue} \textbf{Strategy definition}} \\ [0.1em] \hline
+  & \\ [-0.9em]
+  add.indicator & add an indicator to a strategy \\ [0.1em]
+  & \\ [-0.9em]
+  add.signal & add a signal to a strategy \\ [0.1em]
+  & \\ [-0.9em]
+  add.rule & add a rule to a strategy \\ [0.1em]
+  & \\ [-0.9em]
+  add.distribution & add a distribution to a paramset in a strategy \\ [0.1em]
+  & \\ [-0.9em]
+  add.constraint & add a constraint on 2 distributions within a paramset \\ [0.1em]
+  & \\ [-0.9em] \\
+  \multicolumn{2}{c}{\color{blue} \textbf{Processing}} \\ [0.1em] \hline
+  & \\ [-0.9em]
+  applyStrategy & apply the strategy to arbitrary market data \\ [0.1em]
+  & \\ [-0.9em]
+  addPosLimit & add position and level limits at timestamp \\ [0.1em]
+  & \\ [-0.9em]
+  apply.paramset & apply a paramset to the strategy \\ [0.1em]
+  & \\ [-0.9em]
+  applyStrategy.rebalancing & apply the strategy to data with periodic rebalancing \\ [0.1em]
+\end{tabular}
+\end{center}
+\end{scriptsize}
+\footnotetext{The functions in quantstrat are used in conjunction with the functions in \texttt{blotter}}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Initialize instruments}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow1}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+library(quantstrat)
+initDate <- '2009-12-31'
+initEq <- 1e6
+currency("USD")
+stock(symbols, currency="USD",multiplier=1)
+@
+\begin{itemize}
+  \item Initialize currency instrument first and then stock instrument
+  \item Important that portfolio, account, and orderbook initialization date be before start of data
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Initialize portfolio, account, and orders object}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow2}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+rm.strat("multiAsset.bb1") # remove portfolio, account, orderbook if re-run
+initPortf(name="multiAsset.bb1", symbols, initDate=initDate)
+initAcct(name="multiAsset.bb1", portfolios="multiAsset.bb1",
+  initDate=initDate, initEq=initEq)
+initOrders(portfolio="multiAsset.bb1", initDate=initDate)
+@
+<<results='hide'>>=
+strategy("bbands", store=TRUE)
+@
+\begin{itemize}
+  \item The function \texttt{rm.strat} removes any existing portfolio, account, or orderbook objects which facilitates re-running the code
+  \item The function \texttt{strategy} initializes and new strategy object
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{add.indicator} function}
+\begin{itemize}
+  \item Indicators are typically standard technical or statistical analysis outputs, such as moving averages, bands, or pricing models
+  \item Indicators are applied before signals and rules, and the output of indicators may be used as inputs to construct signals or fire rules
+\end{itemize}
+<<>>=
+args(add.indicator)
+@
+\vq
+\textmd{Main arguments:}
+\begin{mydescription}{arguments}
+  \item [strategy] strategy object
+  \item [name] name of the indicator (must be an R function)
+  \item [arguments] arguments to be passed to the indicator function
+  \item [label] name to reference the indicator
+\end{mydescription}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Define indicators}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow3}
+\end{center} \vspace{-1.5\baselineskip}
+<<>>=
+args(BBands)
+@
+<<results='hide'>>=
+add.indicator("bbands", name = "BBands",
+  arguments = list(HLC = quote(HLC(mktdata)), maType='SMA'), label='bbInd')
+@
+\begin{itemize}
+  \item Note that n and sd are not included in the indicator arguments list
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{add.signals} function}
+quantstrat supports the following signal types:
+\begin{mydescription}{sigComparison}
+  \item [sigCrossover] crossover signal ("gt", "lt", "eq", "gte", "lte")
+  \item [sigComparison] comparison signal ("gt", "lt", "eq", "gte", "lte")
+  \item [sigThreshold] threshold signal ("gt", "lt", "eq", "gte", "lte")
+  \item [sigPeak] peak/valley signals ("peak", "bottom")
+  \item [sigFormula] signal calculated from a formula
+\end{mydescription}
+<<>>=
+args(add.signal)
+@
+\vq
+\textmd{Main arguments:}
+\begin{mydescription}{arguments}
+  \item [strategy] strategy object
+  \item [name] name of the signal, must correspond to an R function
+  \item [arguments] arguments to be passed to the signal function
+\end{mydescription}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Define signals}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow3}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+add.signal("bbands", name="sigCrossover",
+  arguments=list(columns=c("High","up"),relationship="gt"),
+  label="H.gt.UpperBand")
+@
+<<results='hide'>>=
+add.signal("bbands", name="sigCrossover",
+  arguments=list(columns=c("Low","dn"),relationship="lt"),
+  label="L.lt.LowerBand")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{add.rules} function}
+The function \texttt{add.rule} adds a rule to a strategy \\
+<<>>=
+args(add.rule)
+@
+\vh
+\textmd{Main arguments:}
+\begin{mydescription}{arguments}
+  \item [strategy] strategy object
+  \item [name] name of the rule (typically \texttt{ruleSignal})
+  \item [arguments] arguments to be passed to the rule function
+  \item [type] type of rule ("risk","order","rebalance","exit","enter")
+  \item [label] user supplied text label for rule
+\end{mydescription}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{ruleSignal} function}
+\texttt{ruleSignal} is the default rule to generate a trade order on a signal \\
+<<>>=
+args(ruleSignal)
+@
+\textmd{Main arguments:}
+\begin{mydescription}{ordertype}
+  \item [sigcol] column name to check for signal
+  \item [sigval] signal value to match
+  \item [orderqty] quantity for order or 'all', modified by osFUN
+  \item [ordertype] "market","limit","stoplimit","stoptrailing","iceberg"
+  \item [orderside] "long", "short", or NULL
+  \item [osFUN] function or name of order sizing function (default is osNoOp)
+\end{mydescription}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Add rules}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow3}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+add.rule("bbands", name='ruleSignal',
+  arguments=list(sigcol="H.gt.UpperBand",sigval=TRUE,
+    orderqty=+100, ordertype='market', orderside='long'),
+  type='enter',
+  label='LongEntry')
+@
+<<results='hide'>>=
+add.rule("bbands", name='ruleSignal',
+  arguments=list(sigcol="L.lt.LowerBand",sigval=TRUE,
+    orderqty= 'all', ordertype='market', orderside='long'),
+  type='exit',
+  label='LongExit')
+@
+\begin{itemize}
+  \item Long-only channel breakout system with pyramiding
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{applyStrategy} function}
+The \texttt{applyStrategy} function applies the strategy to arbitrary market data \\
+<<>>=
+args(applyStrategy)
+@
+\vh
+\textmd{Main arguments:}
+\begin{mydescription}{parameters}
+  \item [strategy] an object of type 'strategy'
+  \item [portfolios] a list of portfolios to apply the strategy to
+  \item [parameters] named list of parameters to be applied during evaluation of the strategy
+\end{mydescription}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Applying strategy to a multi-asset portfolio}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow4}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+nSD = 2
+nMA = 20
+@
+<<results='hide'>>=
+out <- applyStrategy("bbands",
+  portfolios="multiAsset.bb1",parameters=list(sd=nSD,n=nMA))
+@
+\begin{itemize}
+  \item For this run the length of the moving average is \Sexpr{nMA} and the standard deviation is \Sexpr{nSD}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Update portfolio and account}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow5}
+\end{center} \vspace{-1.5\baselineskip}
+<<results='hide'>>=
+updatePortf("multiAsset.bb1")
+updateAcct("multiAsset.bb1")
+updateEndEq("multiAsset.bb1")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Data integrity check}
+<<size='Tiny'>>=
+checkBlotterUpdate <- function(port.st,account.st,verbose=TRUE)
+{
+  ok <- TRUE
+  p <- getPortfolio(port.st)
+  a <- getAccount(account.st)
+  syms <- names(p$symbols)
+  port.tot <- sum(sapply(syms,FUN = function(x) eval(parse(
+    text=paste("sum(p$symbols",x,"posPL.USD$Net.Trading.PL)",sep="$")))))
+  port.sum.tot <- sum(p$summary$Net.Trading.PL)
+  if( !isTRUE(all.equal(port.tot,port.sum.tot)) ) {
+    ok <- FALSE
+    if( verbose )
+      print("portfolio P&L doesn't match sum of symbols P&L")
+  }
+  initEq <- as.numeric(first(a$summary$End.Eq))
+  endEq <- as.numeric(last(a$summary$End.Eq))
+  if( !isTRUE(all.equal(port.tot,endEq-initEq)) ) {
+    ok <- FALSE
+    if( verbose )
+      print("portfolio P&L doesn't match account P&L")
+  }
+  if( sum(duplicated(index(p$summary))) ) {
+    ok <- FALSE
+    if( verbose )
+      print("duplicate timestamps in portfolio summary")
+  }
+  if( sum(duplicated(index(a$summary))) ) {
+    ok <- FALSE
+    if( verbose )
+      print("duplicate timestamps in account summary")
+  }
+  return(ok)
+}
+checkBlotterUpdate("multiAsset.bb1","multiAsset.bb1")
+@
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Chart performance for all of the assets}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow6}
+\end{center} \vspace{-1.5\baselineskip}
+<<CHARTPOSNPANEL,fig.width=24,fig.height=18>>=
+par(mfrow=c(3,3))
+for(symbol in symbols)
+{
+chart.Posn(Portfolio="multiAsset.bb1",Symbol=symbol,theme=myTheme,
+	TA="add_BBands(n=20,sd=2)")
+}
+par(mfrow=c(1,1))
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Position plots} \vm
+\begin{center}
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/CHARTPOSNPANEL-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Chart performance for one of the assets}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow6}
+\end{center} \vspace{-1.5\baselineskip}
+<<XLBCP,cache=FALSE>>=
+chart.Posn("multiAsset.bb1","XLU",TA="add_BBands(n=20,sd=2)",theme=myTheme)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{BBands strategy for XLU} \vm
+\begin{center}
+\includegraphics[width=0.95\textwidth,keepaspectratio]{figures/XLBCP-1}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Position sizing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Stop orders}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parameter optimization}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
+\begin{center}
+\includegraphics[width=0.75\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vb
+\url{http://depts.washington.edu/compfin}
+\end{center}
+\end{frame}
+
+\end{document}
+

@@ -1,0 +1,477 @@
+\documentclass[fleqn,xcolor=pdftex,dvipsnames,table]{beamer}
+
+\input{boilerPlateUW}
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\beamer@sectionintoc}{\vskip1.5em}{\vskip1.3em}{}{}
+\makeatother
+
+\AtBeginSection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       % sectionstyle=<style for current section>/<style for other sections>
+       % subsectionstyle=<style for current subsection>/<style for other subsections in current section>/<style for subsections in other sections>
+       \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/show/hide]
+   \end{frame}
+}
+\AtBeginSubsection[]
+{
+   \begin{frame}
+       \frametitle{Outline}
+       % sectionstyle=<style for current section>/<style for other sections>
+       % subsectionstyle=<style for current subsection>/<style for other subsections in current section>/<style for subsections in other sections>
+       \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
+   \end{frame}
+}
+
+\title{Getting started with quantstrat}
+\author{\href{http://faculty.washington.edu/gyollin/}{Guy Yollin}}
+\date{R/Finance 2015}
+\institute[Copyright \copyright \ 2015]{}
+%\logo{\includegraphics[width=0.25in]{logo}}
+
+<<echo=FALSE>>=
+#########################################################################
+# Copyright (C) 2011-2015 Guy Yollin                                    #
+# License: http://www.gnu.org/licenses/gpl.html GPL version 2 or higher #
+#########################################################################
+@
+<<include=FALSE>>=
+library(knitr)
+opts_chunk$set(tidy=FALSE,cache=FALSE,size='scriptsize',
+  fig.path='figures/',fig.show='hide',fig.keep='last',
+  fig.align='center',	fig.width=7,	fig.height=5,
+  message=FALSE,warning=FALSE)
+@
+<<echo=FALSE,cache=FALSE>>=
+options(width=81,continue=" ",digits=8)
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\normalem
+\lstset{language=Pascal,basicstyle=\scriptsize,tabsize=2}
+
+%\frame{\titlepage}
+\begin{frame}
+\vb
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
+\begin{center}
+\includegraphics[width=0.9\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vspace{2.0\baselineskip}
+\LARGE {\textbf{Getting started with quantstrat}} \\ \vspace{2.0\baselineskip}
+\large{Guy Yollin} \\ \vq
+\scriptsize{Applied Mathematics\\University of Washington}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Legal Disclaimer}
+\begin{itemize}
+  \item This presentation is for informational purposes only
+  \item This presentation should not be construed as a solicitation or offering of investment services
+  \item The presentation does not intend to provide investment advice
+  \item The information in this presentation should not be construed as an offer to buy or sell, or the solicitation of an offer to buy or sell any security, or as a recommendation or advice about the purchase or sale of any security
+  \item The presenter(s) shall not shall be liable for any errors or inaccuracies in the information presented
+  \item There are no warranties, expressed or implied, as to accuracy, completeness, or results obtained from any information presented
+\end{itemize}
+\begin{center}
+\color{red}\textbf{INVESTING ALWAYS INVOLVES RISK}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+\begin{frame}
+\frametitle{Lecture references}
+\begin{itemize}
+  \item TradeAnalytics project page on R-forge:\\
+  \url{http://r-forge.r-project.org/projects/blotter/}
+  \begin{itemize}
+    \item documents and demos for:
+    \begin{itemize}
+      \item blotter package
+      \item quantstrat package\\
+    \end{itemize}
+  \end{itemize} \vb
+  \item Using quantstrat by Jan Humme \& Brian Peterson\\
+  {\footnotesize \url{http://www.rinfinance.com/agenda/2013/workshop/Humme+Peterson.pdf} \vb}
+  \item R-SIG-FINANCE:\\
+  \url{https://stat.ethz.ch/mailman/listinfo/r-sig-finance} \vb
+\end{itemize}
+\footnotetext[2]{demos are located in the directory: \texttt{.../R-3.x.x/library/quantstrat/demo}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Guy Yollin}
+\begin{itemize}
+    \item{Professional Experience}
+    \begin{itemize}
+      \item{Software Engineering}
+        \begin{itemize}
+        \item{r-programming.org}
+        \item{Insightful Corporation}
+        \item{Electro Scientific Industries, Vision Products Division}
+        \end{itemize}
+      \item{Hedge Fund}
+        \begin{itemize}
+          \item{Rotella Capital Management}
+          \item{J.E. Moody, LLC}
+        \end{itemize}
+      \item{Academic}
+        \begin{itemize}
+          \item{University of Washington}
+          \item{Oregon Graduate Institute}
+        \end{itemize}
+      \end{itemize} \vh
+    \item{Education}
+    \begin{itemize}
+        \item{Oregon Graduate Institute, Computational Finance}
+        \item{Drexel University, Electrical Engineering}
+    \end{itemize}\vh
+    \item{Contact Info}
+    \begin{itemize}
+        \item{\url{gyollin@uw.edu}}
+        \item{\url{http://www.linkedin.com/in/guyyollin}}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Packages for quantitative finance in R} \vspace{-0.5\baselineskip}
+\begin{center}
+\includegraphics[width=0.95\textwidth,keepaspectratio]{images/quantAnalPackageHierarchy}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{About \texttt{blotter} and \texttt{quantstrat}}
+\begin{itemize}
+  \item  Provides support for multi-asset class and multi-currency portfolios for backtesting and other financial research. \textcolor{red}{\textbf{Still in heavy development}}. \vh
+  \item The software is in an beta stage
+  \begin{itemize}
+    \item some things are not completely implemented (or documented)
+    \item some things invariably have errors
+    \item some implementations will change in the future
+  \end{itemize} \vh
+  \item Software has been in development for a number of years
+  \begin{itemize}
+    \item blotter: Dec-2008
+    \item quantstrat: Feb-2010
+  \end{itemize} \vh
+  \item Software is used everyday by working professions in asset management
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The \texttt{blotter} package}
+Description\\
+{\addtolength{\leftskip}{5 mm}
+Transaction infrastructure for defining instruments, transactions, portfolios and accounts for trading systems and simulation. Provides portfolio support for multi-asset class and multi-currency portfolios.  Still in heavy development.\\*
+}\vh
+Key features
+\begin{itemize}
+  \item supports portfolios of multiple assets
+  \item supports accounts of multiple portfolios
+  \item supports P\&L calculation and roll-up across instruments and portfolios (i.e. \texttt{blotter} does low-level trading system accounting)
+\end{itemize} \vh
+Authors
+\begin{itemize}
+  \item Peter Carl
+  \item Brian Peterson
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The \texttt{quantstrat} package}
+Description\\
+{\addtolength{\leftskip}{5 mm}
+\texttt{quantstrat} provides a generic infrastructure to model and backtest signal-based quantitative strategies. It is a high-level abstraction layer (built on xts, FinancialInstrument, blotter, etc.) that allows you to build and test strategies in very few lines of code. \\*
+}\vh
+Key features
+\begin{itemize}
+  \item Supports strategies which include indicators, signals, and rules
+  \item Allows strategies to be applied to multi-asset portfolios
+  \item Supports market, limit, stoplimit, and stoptrailing order types
+  \item Supports order sizing and parameter optimization
+\end{itemize} \vh
+Authors
+\begin{itemize}
+  \item Peter Carl
+  \item Brian Peterson
+  \item Jeffrey Ryan
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The TTR package}
+The \texttt{TTR} package is a comprehensive collection of technical analysis indicators for R \\ \vh
+\textmd{Key features:}
+\begin{itemize}
+  \item moving averages
+  \item oscillators
+  \item price channels
+  \item trend indicators
+\end{itemize} \vh
+\textmd{Author:}
+\begin{itemize}
+  \item Joshua Ulrich
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Selected technical analysis indicators in TTR}
+\begin{tiny}
+\begin{center}
+\begin{tabular}{ l | l || l | l }
+  \textbf{Function} & \textbf{Description} & \textbf{Function} & \textbf{Description} \\ [0.5em] \hline
+  & & & \\ [-0.5em]
+  stoch & stochastic oscillator & ADX & Directional Movement Index \\ [0.5em]
+  aroon & Aroon indicator & ATR & Average True Range \\ [0.5em]
+  BBands & Bollinger bands & CCI & Commodity Channel Index \\ [0.5em]
+  chaikinAD & Chaikin Acc/Dist & chaikinVolatility & Chaikin Volatility \\ [0.5em]
+  ROC & rate of change & momentum & momentum indicator \\ [0.5em]
+  CLV & Close Location Value & CMF & Chaikin Money Flow \\ [0.5em]
+  CMO & Chande Momentum Oscillator & SMA & simple moving average \\ [0.5em]
+  EMA & exponential moving average & DEMA & double exp mov avg \\ [0.5em]
+  VWMA & volume weighted MA & VWAP & volume weighed avg price \\ [0.5em]
+  DonchianChannel & Donchian Channel & DPO & Detrended Price Oscillator \\ [0.5em]
+  EMV & Ease of Movement Value & volatility & volatility estimators \\ [0.5em]
+  MACD & MA converge/diverge & MFI & Money Flow Index \\ [0.5em]
+  RSI & Relative Strength Index & SAR & Parabolic Stop-and-Reverse \\ [0.5em]
+  TDI & Trend Detection Index & TRIX & Triple Smoothed Exponential Osc \\ [0.5em]
+  VHF & Vertical Horizontal Filter & williamsAD & Williams Acc/Dist \\ [0.5em]
+  WPR & William's \% R & ZigZag & Zig Zag trend line \\ [0.5em]
+\end{tabular}
+\end{center}
+\end{tiny}
+\footnotetext{see Technical Analysis from A to Z by Steven Achelis}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Install trading system development packages}
+<<eval=FALSE>>=
+#
+# install these packages from CRAN (or r-forge)
+#
+install.packages("xts")
+install.packages("PerformanceAnalytics")
+install.packages("quantmod")
+install.packages("TTR")
+#
+# Install these package from r-forge
+#
+install.packages("FinancialInstrument", repos = "http://R-Forge.R-project.org")
+install.packages("blotter", repos = "http://R-Forge.R-project.org")
+install.packages("quantstrat", repos = "http://R-Forge.R-project.org")
+@
+\begin{itemize}
+  \item R-Forge packages can be installed by setting the repos argument to \url{http://R-Forge.R-project.org}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{ETF Portfolio}
+In the following examples, we'll use a 9-asset portfolio composed of the 9 Select Sector SPDRs that divide the S\&P 500 into nine sector index funds: \\ \vb
+\begin{small}
+\begin{center}
+\begin{tabular}{ l l }
+  \textbf{Symbol} & \textbf{Sector} \\ [0.1em] \hline
+  & \\ [-0.1em]
+  XLY & Consumer Discretionary \\ [0.1em]
+  XLP & Consumer Staples \\ [0.1em]
+  XLE & Energy \\ [0.1em]
+  XLF & Financial \\ [0.1em]
+  XLV & Health Care \\ [0.1em]
+  XLI & Industrial \\ [0.1em]
+  XLB & Materials \\ [0.1em]
+  XLK & Technology \\ [0.1em]
+  XLU & Utilities \\ [0.1em]
+\end{tabular}
+\end{center}
+\end{small}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Download data}
+<<>>=
+library(PerformanceAnalytics)
+library(quantmod)
+library(lattice)
+startDate <- '2010-01-01'  # start of data
+endDate <-  '2015-05-01'   # end of data
+Sys.setenv(TZ="UTC")       # set time zone
+symbols = c("XLF", "XLP", "XLE", "XLY", "XLV", "XLI", "XLB", "XLK", "XLU")
+@
+\vm
+<<echo=FALSE>>=
+if(file.exists("XLX.RData"))
+{
+  load("XLX.RData")
+} else {
+  getSymbols(symbols, from=startDate, to=endDate, index.class="POSIXct")
+  for(symbol in symbols) {
+      x<-get(symbol)
+      x<-adjustOHLC(x,symbol.name=symbol)
+      x<-to.weekly(x,indexAt='lastof',drop.time=TRUE)
+      indexFormat(x)<-'%Y-%m-%d'
+      colnames(x)<-gsub("x",symbol,colnames(x))
+      assign(symbol,x)
+  }
+  save(list=symbols,file="XLX.RData")
+}
+@
+<<eval=FALSE>>=
+  getSymbols(symbols, from=startDate, to=endDate, index.class="POSIXct")
+  for(symbol in symbols) {
+      x<-get(symbol)
+      x<-adjustOHLC(x,symbol.name=symbol)
+      x<-to.weekly(x,indexAt='lastof',drop.time=TRUE)
+      indexFormat(x)<-'%Y-%m-%d'
+      colnames(x)<-gsub("x",symbol,colnames(x))
+      assign(symbol,x)
+  }
+@
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Compute returns}
+<<plotETF,echo=TRUE, fig.keep='all', tidy=FALSE>>=
+prices <- NULL
+for(i in 1:length(symbols))
+  prices <- cbind(prices,Cl(get(symbols[i])))
+colnames(prices) <- symbols
+returns <- diff(log(prices))[-1, ]
+num.ass <- ncol(returns)
+
+xyplot(prices, xlab = "", layout = c(3, 3),type=c("l","g"))
+
+stacked.df <- stack(as.data.frame(returns))
+colnames(stacked.df) <- c("returns", "symbol")
+
+densityplot(~returns | symbol, stacked.df, cex = 0.25, xlab="",type=c("l","g"))
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Sector Select SPDRs} \vm \vm
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{figures/plotETF-1}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Sector Select SPDRs} \vm \vm
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{figures/plotETF-2}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Bollinger bands}
+\begin{itemize}
+  \item Bollinger bands are a volatility-sensitive price channel \vh
+  \item Published by John Bollinger in the early 1980s \vh
+  \item RSI Calculation
+  \begin{itemize}
+    \item MA(nMA) = simple moving average of the weighted-close
+    \item Upper Band = MA(nMA) + nSD $\times$ StdDev(C)
+    \item Lower Band = MA(nMA) - nSD $\times$ StdDev(C)
+    \item nMA typically 20
+    \item nSD typically in the range of 2 to 3
+  \end{itemize} \vh
+  \item Interpretation
+  \begin{itemize}
+    \item Trade channel reversals between the upper and lower bands
+    \item Trade channel break-outs above/below the bands
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Long-only Bollinger Band breakout strategy}
+Buy rule:
+\begin{itemize}
+  \item Buy long when the High crosses above the upper band
+\end{itemize} \vb
+Exit rule:
+\begin{itemize}
+  \item Exit when the Low crosses below the lower band
+\end{itemize} \vb
+Pyramiding:
+\begin{itemize}
+  \item Multiple orders in the same direction
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Calculate and plot Bollinger bands}
+<<XLFBB,cache=FALSE>>=
+args(BBands)
+b <- BBands(HLC=HLC(XLF["2013"]), n=20, sd=2)
+tail(b)
+myTheme<-chart_theme()
+myTheme$col$dn.col<-'lightblue'
+myTheme$col$dn.border <- 'lightgray'
+myTheme$col$up.border <- 'lightgray'
+chart_Series(XLF,TA='add_BBands(lwd=2)',theme=myTheme,name="XLF")
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Bollinger bands} \vm
+\begin{center}
+\includegraphics[width=0.95\textwidth,keepaspectratio]{figures/XLFBB-1}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Basic quantstrat strategy example}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Position sizing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Stop orders}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Parameter optimization}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
+\begin{center}
+\includegraphics[width=0.75\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vb
+\url{http://depts.washington.edu/compfin}
+\end{center}
+\end{frame}
+
+\end{document}
+

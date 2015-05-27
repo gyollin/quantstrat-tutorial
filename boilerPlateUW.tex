@@ -1,0 +1,162 @@
+
+% preamble for UW formatted latex/beamer slides
+
+\usetheme{Madrid}
+
+\definecolor{darkpurple}{rgb}{.1255,.2431,.5882} % 57-39-91
+\definecolor{purple}{rgb}{.2235,.1529,.3569}  % huskies official purple
+\definecolor{purple1}{rgb}{.1765,.1216,.2784} % darkest
+\definecolor{purple2}{rgb}{.3098,.2118,.4902} % lighter than official
+\definecolor{purple3}{rgb}{.4392,.3020,.7020} % very light
+\definecolor{purple4}{rgb}{.6078,.5098,.7882} % lightest
+\definecolor{gold}{rgb}{.8863,.8157,.4275}
+\definecolor{blu}{rgb}{.0,.0,.50}
+
+% note: beamer output size: 128mm x 96mm (5.04in x 3.78in)
+
+\setbeamercolor{frametitle}{fg=gold,bg=purple}
+\usecolortheme{dolphin}
+\setbeamercolor*{palette primary}{use=structure,fg=gold,bg=purple}
+\setbeamercolor*{palette secondary}{use=structure,fg=gold,bg=purple}
+\setbeamercolor*{palette tertiary}{use=structure,fg=gold,bg=purple}
+\setbeamercolor*{palette quaternary}{fg=white,bg=black}
+
+\newcommand{\vb}{\vspace{\baselineskip}}
+\newcommand{\vh}{\vspace{.5\baselineskip}}
+\newcommand{\vq}{\vspace{.25\baselineskip}}
+\newcommand{\vm}{\vspace{-.5\baselineskip}}
+
+\newenvironment<>{noteblock}[1]{%
+\setbeamercolor*{block title}{bg=purple4,fg=gold}% These two lines added
+\setbeamercolor*{block body}{bg=purple4!60}% to the "block" env. definition
+\begin{actionenv}#2%
+\def\insertblocktitle{#1}%
+\par%
+\usebeamertemplate{block begin}}
+{\par%
+\usebeamertemplate{block end}%
+\end{actionenv}}
+
+\newenvironment<>{myboldblock}[1]{%
+\setbeamercolor*{block title}{bg=gray!20,fg=black}% These two lines added
+\setbeamercolor*{block body}{bg=gray!5}% to the "block" env. definition
+\begin{actionenv}#2%
+\def\insertblocktitle{\footnotesize{\textbf{#1}}}%
+\par%
+\usebeamertemplate{block begin}}
+{\par%
+\usebeamertemplate{block end}%
+\end{actionenv}}
+
+\newenvironment<>{mylistingblock}[1]{%
+\setbeamercolor*{block title}{bg=blue!10,fg=black}% These two lines added
+\setbeamercolor*{block body}{bg=gray!2}% to the "block" env. definition
+\begin{actionenv}#2%
+\def\insertblocktitle{\footnotesize{\textbf{#1}}}%
+\par%
+\usebeamertemplate{block begin}}
+{\par%
+\usebeamertemplate{block end}%
+\end{actionenv}}
+
+\newenvironment<>{bluenote}[1]{%
+\setbeamercolor*{block title}{bg=blue,fg=white}% These two lines added
+\setbeamercolor*{block body}{bg=blue!20}% to the "block" env. definition
+\begin{actionenv}#2%
+\def\insertblocktitle{#1}%
+\par%
+\usebeamertemplate{block begin}}
+{\par%
+\usebeamertemplate{block end}%
+\end{actionenv}}
+
+\newenvironment<>{mydefinition}[1]{%
+\setbeamercolor*{block title}{bg=blue!50,fg=black}% These two lines added
+\setbeamercolor*{block body}{bg=blue!20}% to the "block" env. definition
+\begin{actionenv}#2%
+\def\insertblocktitle{#1}%
+\par%
+\usebeamertemplate{block begin}}
+{\par%
+\usebeamertemplate{block end}%
+\end{actionenv}}
+
+\setlength{\labelsep}{1.0em}
+\newenvironment{mydescription}[1]
+  {\begin{list}{}%
+   {\renewcommand\makelabel[1]{\color{blu}{##1}\hfill}%
+   \settowidth\labelwidth{\makelabel{#1}}%
+   \setlength\leftmargin{\labelwidth}
+   \addtolength\leftmargin{\labelsep}}}
+  {\end{list}}
+
+\setlength{\labelsep}{1.0em}
+\newenvironment{bethdescription}[1]
+  {\begin{list}{}%
+   {\renewcommand\makelabel[1]{\color{blu}\hfill{##1}}%
+   \settowidth\labelwidth{\makelabel{#1}}%
+   \setlength\leftmargin{\labelwidth}
+   \addtolength\leftmargin{\labelsep}}}
+  {\end{list}}
+
+\newenvironment{myindentpar}[1]%
+{\begin{list}{}%
+         {\setlength{\leftmargin}{#1}}%
+         \item[]%
+}
+{\end{list}}
+
+\setbeamercolor{postit}{fg=purple,bg=gold}
+
+\setbeamercolor{block body}{bg=gray!10}
+\setbeamercolor{block title}{bg=gray!20,fg=black}
+
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+% package below is to fix the error "No room for a new \dimen" which showed up in August of 2014
+\usepackage{etex}
+
+\usepackage{booktabs}
+%\usepackage{ctable}
+\setlength{\heavyrulewidth}{0.1 em}
+\newcommand {\otoprule}{\midrule[\heavyrulewidth]}
+\usepackage{ulem}
+\usepackage{listings}
+\usepackage[absolute,overlay,showboxes]{textpos}
+% line below is commented out to avoid grid display when using
+% the package handoutWithNotes
+%\usepackage[colorgrid,texcoord]{eso-pic}
+\usepackage{tikz}
+\usetikzlibrary{shapes.callouts}
+\usepackage{multirow}
+\usepackage{colortbl}
+
+\setlength{\jot}{10pt}
+
+%adjust the TPHorizModule and TPHorizModule units to the displayed mm %grid
+\TPGrid{128}{96}
+\TPMargin{5pt}
+\textblockrulecolour{red}
+\TPshowboxesfalse
+%\textblockcolour{gray!20}
+
+%puts a graphic at the absolute position described by the grid
+%#1 x, #2 y, #3 width, #4 height, #5 graphic
+\newcommand\putpic[5]{%
+        \begin{textblock}{#3}(#1,#2)
+  \includegraphics[width=#3\TPHorizModule,
+  height=#4\TPVertModule]{#5}
+     \end{textblock}
+}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+\setbeamertemplate{navigation symbols}{}
+
+% the following 2 lines
+% fix the Corrupted NFSS tables problem
+% and produce a document with no font related warnings
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+%\usepackage[noae]{Sweave}
+
