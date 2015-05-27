@@ -59,12 +59,14 @@ options(width=81,continue=" ",digits=8)
 %\frame{\titlepage}
 \begin{frame}
 \vb
-\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}} \vm
 \begin{center}
-\includegraphics[width=0.9\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vspace{2.0\baselineskip}
-\LARGE {\textbf{Getting started with quantstrat}} \\ \vspace{2.0\baselineskip}
+\includegraphics[width=0.5\textwidth,keepaspectratio]{images/stockMarket.jpg} \\ \vspace{1.0\baselineskip}
+\LARGE {\textbf{Getting started with quantstrat}} \\ \vspace{1.0\baselineskip}
 \large{Guy Yollin} \\ \vq
-\scriptsize{Applied Mathematics\\University of Washington}
+\scriptsize{University of Washington} \\ \vh
+\large{Joshua Ulrich} \\ \vq
+\scriptsize{DV Trading}
 \end{center}
 \end{frame}
 
@@ -85,37 +87,6 @@ options(width=81,continue=" ",digits=8)
 \color{red}\textbf{INVESTING ALWAYS INVOLVES RISK}
 \end{center}
 \end{frame}
-
-\begin{frame}
-\frametitle{Outline}
-\tableofcontents
-\end{frame}
-
-\begin{frame}
-\frametitle{Lecture references}
-\begin{itemize}
-  \item TradeAnalytics project page on R-forge:\\
-  \url{http://r-forge.r-project.org/projects/blotter/}
-  \begin{itemize}
-    \item documents and demos for:
-    \begin{itemize}
-      \item blotter package
-      \item quantstrat package\\
-    \end{itemize}
-  \end{itemize} \vb
-  \item Using quantstrat by Jan Humme \& Brian Peterson\\
-  {\footnotesize \url{http://www.rinfinance.com/agenda/2013/workshop/Humme+Peterson.pdf} \vb}
-  \item R-SIG-FINANCE:\\
-  \url{https://stat.ethz.ch/mailman/listinfo/r-sig-finance} \vb
-\end{itemize}
-\footnotetext[2]{demos are located in the directory: \texttt{.../R-3.x.x/library/quantstrat/demo}}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
 \frametitle{Guy Yollin}
@@ -182,6 +153,37 @@ options(width=81,continue=" ",digits=8)
 \end{frame}
 
 \begin{frame}
+\frametitle{Lecture references}
+\begin{itemize}
+  \item TradeAnalytics project page on R-forge:\\
+  \url{http://r-forge.r-project.org/projects/blotter/}
+  \begin{itemize}
+    \item documents and demos for:
+    \begin{itemize}
+      \item blotter package
+      \item quantstrat package\\
+    \end{itemize}
+  \end{itemize} \vb
+  \item Using quantstrat by Jan Humme \& Brian Peterson\\
+  {\footnotesize \url{http://www.rinfinance.com/agenda/2013/workshop/Humme+Peterson.pdf} \vb}
+  \item R-SIG-FINANCE:\\
+  \url{https://stat.ethz.ch/mailman/listinfo/r-sig-finance} \vb
+\end{itemize}
+\footnotetext[2]{demos are located in the directory: \texttt{.../R-3.x.x/library/quantstrat/demo}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
 \frametitle{Packages for quantitative finance in R} \vspace{-0.5\baselineskip}
 \begin{center}
 \includegraphics[width=0.95\textwidth,keepaspectratio]{images/quantAnalPackageHierarchy}
@@ -241,9 +243,8 @@ Key features
 \end{itemize} \vh
 Authors
 \begin{itemize}
-  \item Peter Carl
-  \item Brian Peterson
-  \item Jeffrey Ryan
+  \item Peter Carl, Brian Peterson
+  \item Joshua Ulrich, Jan Humme
 \end{itemize}
 \end{frame}
 
@@ -376,6 +377,10 @@ if(file.exists("XLX.RData"))
       assign(symbol,x)
   }
 @
+\begin{itemize}
+  \item Set timezone
+  \item Use \texttt{POSIXct} as index class for historic quotes
+\end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
