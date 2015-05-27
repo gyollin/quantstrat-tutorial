@@ -153,6 +153,35 @@ options(width=81,continue=" ",digits=8)
 \end{frame}
 
 \begin{frame}
+\frametitle{Joshua Ulrich}
+\begin{itemize}
+  \item{Professional Experience}
+    \begin{itemize}
+      \item{Programming}
+        \begin{itemize}
+          \item{fossfinance.com}
+          \item{R packages: TTR, xts, quantmod, blotter, quantstrat, pack, LSPM}
+        \end{itemize}  %% Programming
+      \item{Finance}
+        \begin{itemize}
+          \item{DV Trading}
+          \item{Enterprise Bank \& Trust}
+          \item{Wells Fargo Home Mortgage}
+        \end{itemize}  %% Finance
+    \end{itemize}\vh   %% Professional experience
+  \item{Education}
+    \begin{itemize}
+        \item{University of Missouri--St. Louis, Economics}
+    \end{itemize}\vh
+  \item{Contact Info}
+    \begin{itemize}
+        \item{\url{josh.m.ulrich@gmail.com}}
+        \item{\url{http://about.me/joshuaulrich}}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
 \frametitle{Packages for quantitative finance in R} \vspace{-0.5\baselineskip}
 \begin{center}
 \includegraphics[width=0.95\textwidth,keepaspectratio]{images/quantAnalPackageHierarchy}
