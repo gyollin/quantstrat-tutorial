@@ -260,8 +260,8 @@ osFixedDollar <- function(timestamp, orderqty, portfolio, symbol, ruletype, ...)
 \frametitle{Ordersets and order chains}
 To implement stop-loss or trailing-stop orders, quantstrat utilizes the concept of ordersets and order chains: \vb
 \begin{mydescription}{distribution}
-  \item [orderset] An orderset is a collection of OCO orders\vb
   \item [OCO order] One-Cancels-Other (OCO) orders are grouped orders such that when one is filled, all others in the orderset are cancelled\vb
+  \item [orderset] An orderset is a collection of OCO orders\vb
   \item [order chain] An order chain defines an order (child) which will be created when another order (parent) is filled \vb
 \end{mydescription}
 \end{frame}
@@ -346,7 +346,7 @@ add.rule("bbands",name='ruleSignal',
 @
 \begin{itemize}
   \item Belongs to orderset \texttt{ocolong}
-  \item Rule type is \texttt{'chain'} and parent is 'LongEntry'
+  \item Rule type is \texttt{'chain'} and parent is \texttt{'LongEntry'}
 \end{itemize}
 \end{frame}
 
@@ -372,7 +372,7 @@ add.rule("bbands", name = 'ruleSignal',
 @
 \begin{itemize}
   \item Belongs to orderset \texttt{ocolong}
-  \item Rule type is \texttt{'chain'} and parent is 'LongEntry'
+  \item Rule type is \texttt{'chain'} and parent is \texttt{'LongEntry'}
 \end{itemize}
 \end{frame}
 

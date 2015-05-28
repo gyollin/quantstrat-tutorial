@@ -153,7 +153,7 @@ options(width=81,continue=" ",digits=8)
 \end{frame}
 
 \begin{frame}
-\frametitle{Lecture references}
+\frametitle{References}
 \begin{itemize}
   \item TradeAnalytics project page on R-forge:\\
   \url{http://r-forge.r-project.org/projects/blotter/}
@@ -378,8 +378,8 @@ if(file.exists("XLX.RData"))
   }
 @
 \begin{itemize}
-  \item Set timezone
-  \item Use \texttt{POSIXct} as index class for historic quotes
+  \item Set timezone  %% where?
+  \item Use \texttt{POSIXct} as index class for historic quotes %% this is no longer necessary
 \end{itemize}
 \end{frame}
 
@@ -417,11 +417,11 @@ densityplot(~returns | symbol, stacked.df, cex = 0.25, xlab="",type=c("l","g"))
 \end{frame}
 
 \begin{frame}
-\frametitle{Bollinger bands}
+\frametitle{Bollinger Bands}
 \begin{itemize}
-  \item Bollinger bands are a volatility-sensitive price channel \vh
+  \item Bollinger Bands are a volatility-sensitive price channel \vh
   \item Published by John Bollinger in the early 1980s \vh
-  \item RSI Calculation
+  \item Bollinger Band Calculation
   \begin{itemize}
     \item MA(nMA) = simple moving average of the weighted-close
     \item Upper Band = MA(nMA) + nSD $\times$ StdDev(C)
@@ -454,7 +454,7 @@ Pyramiding:
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Calculate and plot Bollinger bands}
+\frametitle{Calculate and plot Bollinger Bands}
 <<XLFBB,cache=FALSE>>=
 args(BBands)
 b <- BBands(HLC=HLC(XLF["2013"]), n=20, sd=2)
@@ -468,7 +468,7 @@ chart_Series(XLF,TA='add_BBands(lwd=2)',theme=myTheme,name="XLF")
 \end{frame}
 
 \begin{frame}
-\frametitle{Bollinger bands} \vm
+\frametitle{Bollinger Bands} \vm
 \begin{center}
 \includegraphics[width=0.95\textwidth,keepaspectratio]{figures/XLFBB-1}
 \end{center}
