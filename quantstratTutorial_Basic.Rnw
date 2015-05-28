@@ -278,7 +278,7 @@ library(quantstrat)
 initDate <- '2009-12-31'
 initEq <- 1e6
 currency("USD")
-stock(symbols, currency="USD",multiplier=1)
+stock(symbols, currency="USD", multiplier=1)
 @
 \begin{itemize}
   \item Initialize currency instrument first and then stock instrument
@@ -339,7 +339,8 @@ add.indicator("bbands", name = "BBands",
   arguments = list(HLC = quote(HLC(mktdata)), maType='SMA'), label='bbInd')
 @
 \begin{itemize}
-  \item Note that n and sd are not included in the indicator arguments list
+  \item \texttt{quote()} returns it's argument without evaluating
+  \item \texttt{mktdata} is the time series object that holds the current symbols data during evaluation
 \end{itemize}
 \end{frame}
 
@@ -442,7 +443,7 @@ add.rule("bbands", name='ruleSignal',
 
 \begin{frame}[fragile]
 \frametitle{The \texttt{applyStrategy} function}
-The \texttt{applyStrategy} function applies the strategy to arbitrary market data \\
+The \texttt{applyStrategy} function applies the strategy to a portfolio and generates transactions according to the strategy rules and the market data \\
 <<>>=
 args(applyStrategy)
 @
@@ -469,7 +470,38 @@ out <- applyStrategy("bbands",
   portfolios="multiAsset.bb1",parameters=list(sd=nSD,n=nMA))
 @
 \begin{itemize}
-  \item For this run the length of the moving average is \Sexpr{nMA} and the standard deviation is \Sexpr{nSD}
+  \item Indicator parameters can be passed when applying the strategy; for this run the length of the moving average is \Sexpr{nMA} and the standard deviation multiplier is \Sexpr{nSD}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Apply the strategy}
+Calling \texttt{applyStrategy} generates transactions in the specified portfolio.
+<<echo=F>>=
+options(width=120)
+@
+<<size='tiny'>>=
+getTxns(Portfolio="multiAsset.bb1", Symbol="XLK")
+@
+<<echo=F>>=
+options(width=81)
+@
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{The \texttt{mktdata} object}
+\texttt{mktdata} is a special variable constructed during the execution of \texttt{applyStrategy}.  It is a time series object which contains the historic price data for the current symbol being evaluated as well as the calculated indicators and signals:\\ \vq
+<<echo=FALSE>>=
+options(width=180,digits=6)
+@
+<<size='Tiny'>>=
+mktdata["2015"]
+@
+<<echo=FALSE>>=
+options(width=81,digits=8)
+@
+\begin{itemize}
+  \item Inspecting \texttt{mktdata} can be very helpful in understanding strategy processing and debugging
 \end{itemize}
 \end{frame}
 
@@ -525,9 +557,15 @@ checkBlotterUpdate("multiAsset.bb1","multiAsset.bb1")
 @
 \end{frame}
 
+\begin{frame}
+\frametitle{How the \texttt{blotter\_portfolio} object gets updated} \vm \vm
+\begin{center}
+\includegraphics[width=0.95\textwidth,keepaspectratio]{images/blotterClassDiagram2.pdf}
+\end{center}
+\end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Chart performance for all of the assets}
+\frametitle{Generate position plots}
 \begin{center}
 \includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow6}
 \end{center} \vspace{-1.5\baselineskip}
@@ -540,6 +578,9 @@ chart.Posn(Portfolio="multiAsset.bb1",Symbol=symbol,theme=myTheme,
 }
 par(mfrow=c(1,1))
 @
+<<XLBCP,cache=FALSE>>=
+chart.Posn("multiAsset.bb1","XLU",TA="add_BBands(n=20,sd=2)",theme=myTheme)
+@
 \end{frame}
 
 \begin{frame}
@@ -549,20 +590,45 @@ par(mfrow=c(1,1))
 \end{center}
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{Chart performance for one of the assets}
-\begin{center}
-\includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow6}
-\end{center} \vspace{-1.5\baselineskip}
-<<XLBCP,cache=FALSE>>=
-chart.Posn("multiAsset.bb1","XLU",TA="add_BBands(n=20,sd=2)",theme=myTheme)
-@
-\end{frame}
-
 \begin{frame}
 \frametitle{BBands strategy for XLU} \vm
 \begin{center}
 \includegraphics[width=0.95\textwidth,keepaspectratio]{figures/XLBCP-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Trade stats by instrument}
+<<MULTITRADESTATS,echo=TRUE,fig.width=12,fig.height=9>>=
+textplot(t(tradeStats("multiAsset.bb1")))
+@
+\vspace{-2.25\baselineskip}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{figures/MULTITRADESTATS-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Individual asset returns}
+<<echo=FALSE>>=
+options(width=78)
+@
+<<IASSRET,cache=FALSE>>=
+rets.multi <- PortfReturns("multiAsset.bb1")
+colnames(rets.multi) <- sort(symbols)
+round(tail(rets.multi,5),6)
+chart.CumReturns(rets.multi, colorset= rich10equal, legend.loc = "topleft",
+  main="SPDR Cumulative Returns",minor.ticks=FALSE)
+@
+<<echo=FALSE>>=
+options(width=81)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Cumulative returns by asset} \vm
+\begin{center}
+\includegraphics[width=0.95\textwidth,keepaspectratio]{figures/IASSRET-1}
 \end{center}
 \end{frame}
 
