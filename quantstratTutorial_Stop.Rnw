@@ -596,7 +596,7 @@ names(results)
 \frametitle{Heatmaps of strategy performance}
 <<PROFITMDDHEAT,fig.width=7,fig.height=7,dev='png',dpi=300>>=
 z <- tapply(X=results$tradeStats$Profit.To.Max.Draw,
-  INDEX=list(results$tradeStats$TrailingLONG,results$tradeStats$StopLossLONG),
+  INDEX=list(results$tradeStats$StopLossTrailingDist,results$tradeStats$StopLossLongDist),
   FUN=median)
 x <- as.numeric(rownames(z))
 y <- as.numeric(colnames(z))
