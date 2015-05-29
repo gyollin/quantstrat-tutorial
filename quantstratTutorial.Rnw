@@ -1564,6 +1564,16 @@ title("Return to MaxDrawdown")
 \footnotetext[2]{demos are located in the directory: \texttt{.../R-3.x.x/library/quantstrat/demo}}
 \end{frame}
 
+\begin{frame}
+\frametitle{Conclusion}
+\begin{itemize}
+  \item Questions \vb
+  \item Download presentation and code:\\
+  \url{https://github.com/gyollin/quantstrat-tutorial.git} \vb
+  \item Thank you for attending
+\end{itemize}
+\end{frame}
+
 
 \end{document}
 
