@@ -59,12 +59,14 @@ options(width=81,continue=" ",digits=8)
 %\frame{\titlepage}
 \begin{frame}
 \vb
-\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}} \vm
 \begin{center}
-\includegraphics[width=0.9\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vspace{2.0\baselineskip}
-\LARGE {\textbf{Getting started with quantstrat}} \\ \vspace{2.0\baselineskip}
+\includegraphics[width=0.5\textwidth,keepaspectratio]{images/stockMarket.jpg} \\ \vspace{1.0\baselineskip}
+\LARGE {\textbf{Getting started with quantstrat}} \\ \vspace{1.0\baselineskip}
 \large{Guy Yollin} \\ \vq
-\scriptsize{Applied Mathematics\\University of Washington}
+\scriptsize{University of Washington} \\ \vh
+\large{Joshua Ulrich} \\ \vq
+\scriptsize{DV Trading}
 \end{center}
 \end{frame}
 
@@ -85,37 +87,6 @@ options(width=81,continue=" ",digits=8)
 \color{red}\textbf{INVESTING ALWAYS INVOLVES RISK}
 \end{center}
 \end{frame}
-
-\begin{frame}
-\frametitle{Outline}
-\tableofcontents
-\end{frame}
-
-\begin{frame}
-\frametitle{Lecture references}
-\begin{itemize}
-  \item TradeAnalytics project page on R-forge:\\
-  \url{http://r-forge.r-project.org/projects/blotter/}
-  \begin{itemize}
-    \item documents and demos for:
-    \begin{itemize}
-      \item blotter package
-      \item quantstrat package\\
-    \end{itemize}
-  \end{itemize} \vb
-  \item Using quantstrat by Jan Humme \& Brian Peterson\\
-  {\footnotesize \url{http://www.rinfinance.com/agenda/2013/workshop/Humme+Peterson.pdf} \vb}
-  \item R-SIG-FINANCE:\\
-  \url{https://stat.ethz.ch/mailman/listinfo/r-sig-finance} \vb
-\end{itemize}
-\footnotetext[2]{demos are located in the directory: \texttt{.../R-3.x.x/library/quantstrat/demo}}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
 \frametitle{Guy Yollin}
@@ -151,6 +122,46 @@ options(width=81,continue=" ",digits=8)
     \end{itemize}
 \end{itemize}
 \end{frame}
+
+\begin{frame}
+\frametitle{Joshua Ulrich}
+\begin{itemize}
+  \item{Professional Experience}
+    \begin{itemize}
+      \item{Programming}
+        \begin{itemize}
+          \item{fossfinance.com}
+          \item{R packages: TTR, xts, quantmod, blotter, quantstrat, pack, LSPM}
+        \end{itemize}  %% Programming
+      \item{Finance}
+        \begin{itemize}
+          \item{DV Trading}
+          \item{Enterprise Bank \& Trust}
+          \item{Wells Fargo Home Mortgage}
+        \end{itemize}  %% Finance
+    \end{itemize}\vh   %% Professional experience
+  \item{Education}
+    \begin{itemize}
+        \item{University of Missouri--St. Louis, Economics}
+    \end{itemize}\vh
+  \item{Contact Info}
+    \begin{itemize}
+        \item{\url{josh.m.ulrich@gmail.com}}
+        \item{\url{http://about.me/joshuaulrich}}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
 \frametitle{Packages for quantitative finance in R} \vspace{-0.5\baselineskip}
@@ -212,9 +223,8 @@ Key features
 \end{itemize} \vh
 Authors
 \begin{itemize}
-  \item Peter Carl
-  \item Brian Peterson
-  \item Jeffrey Ryan
+  \item Peter Carl, Brian Peterson
+  \item Joshua Ulrich, Jan Humme
 \end{itemize}
 \end{frame}
 
@@ -349,7 +359,7 @@ if(file.exists("XLX.RData"))
 @
 \begin{itemize}
   \item Set timezone
-  \item Use \texttt{POSIXct} for index class of quote data
+  \item Use \texttt{POSIXct} as index class for historic quotes
 \end{itemize}
 \end{frame}
 
@@ -565,7 +575,7 @@ library(quantstrat)
 initDate <- '2009-12-31'
 initEq <- 1e6
 currency("USD")
-stock(symbols, currency="USD",multiplier=1)
+stock(symbols, currency="USD", multiplier=1)
 @
 \begin{itemize}
   \item Initialize currency instrument first and then stock instrument
@@ -590,7 +600,7 @@ strategy("bbands", store=TRUE)
 @
 \begin{itemize}
   \item The function \texttt{rm.strat} removes any existing portfolio, account, or orderbook objects which facilitates re-running the code
-  \item The function \texttt{strategy} initializes a new strategy object
+  \item The function \texttt{strategy} initializes and new strategy object
 \end{itemize}
 \end{frame}
 
@@ -626,7 +636,8 @@ add.indicator("bbands", name = "BBands",
   arguments = list(HLC = quote(HLC(mktdata)), maType='SMA'), label='bbInd')
 @
 \begin{itemize}
-  \item Note that n and sd are not included in the indicator arguments list
+  \item \texttt{quote()} returns it's argument without evaluating
+  \item \texttt{mktdata} is the time series object that holds the current symbols data during evaluation
 \end{itemize}
 \end{frame}
 
@@ -729,7 +740,7 @@ add.rule("bbands", name='ruleSignal',
 
 \begin{frame}[fragile]
 \frametitle{The \texttt{applyStrategy} function}
-The \texttt{applyStrategy} function applies the strategy to arbitrary market data \\
+The \texttt{applyStrategy} function applies the strategy to a portfolio and generates transactions according to the strategy rules and the market data \\
 <<>>=
 args(applyStrategy)
 @
@@ -756,7 +767,38 @@ out <- applyStrategy("bbands",
   portfolios="multiAsset.bb1",parameters=list(sd=nSD,n=nMA))
 @
 \begin{itemize}
-  \item For this run the length of the moving average is \Sexpr{nMA} and the standard deviation is \Sexpr{nSD}
+  \item Indicator parameters can be passed when applying the strategy; for this run the length of the moving average is \Sexpr{nMA} and the standard deviation multiplier is \Sexpr{nSD}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Apply the strategy}
+Calling \texttt{applyStrategy} generates transactions in the specified portfolio.
+<<echo=F>>=
+options(width=120)
+@
+<<size='tiny'>>=
+getTxns(Portfolio="multiAsset.bb1", Symbol="XLK")
+@
+<<echo=F>>=
+options(width=81)
+@
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{The \texttt{mktdata} object}
+\texttt{mktdata} is a special variable constructed during the execution of \texttt{applyStrategy}.  It is a time series object which contains the historic price data for the current symbol being evaluated as well as the calculated indicators and signals:\\ \vq
+<<echo=FALSE>>=
+options(width=180,digits=6)
+@
+<<size='Tiny'>>=
+mktdata["2015"]
+@
+<<echo=FALSE>>=
+options(width=81,digits=8)
+@
+\begin{itemize}
+  \item Inspecting \texttt{mktdata} can be very helpful in understanding strategy processing and debugging
 \end{itemize}
 \end{frame}
 
@@ -812,21 +854,78 @@ checkBlotterUpdate("multiAsset.bb1","multiAsset.bb1")
 @
 \end{frame}
 
+\begin{frame}
+\frametitle{How the \texttt{blotter\_portfolio} object gets updated} \vm \vm
+\begin{center}
+\includegraphics[width=0.95\textwidth,keepaspectratio]{images/blotterClassDiagram2.pdf}
+\end{center}
+\end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Chart performance for one of the assets}
+\frametitle{Generate position plots}
 \begin{center}
 \includegraphics[width=1.0\textwidth,keepaspectratio]{images/qsFlow6}
 \end{center} \vspace{-1.5\baselineskip}
+<<CHARTPOSNPANEL,fig.width=24,fig.height=18>>=
+par(mfrow=c(3,3))
+for(symbol in symbols)
+{
+chart.Posn(Portfolio="multiAsset.bb1",Symbol=symbol,theme=myTheme,
+	TA="add_BBands(n=20,sd=2)")
+}
+par(mfrow=c(1,1))
+@
 <<XLBCP,cache=FALSE>>=
 chart.Posn("multiAsset.bb1","XLU",TA="add_BBands(n=20,sd=2)",theme=myTheme)
 @
 \end{frame}
 
 \begin{frame}
+\frametitle{Position plots} \vm
+\begin{center}
+\includegraphics[width=0.90\textwidth,keepaspectratio]{figures/CHARTPOSNPANEL-1}
+\end{center}
+\end{frame}
+
+\begin{frame}
 \frametitle{BBands strategy for XLU} \vm
 \begin{center}
 \includegraphics[width=0.95\textwidth,keepaspectratio]{figures/XLBCP-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Trade stats by instrument}
+<<MULTITRADESTATS,echo=TRUE,fig.width=12,fig.height=9>>=
+textplot(t(tradeStats("multiAsset.bb1")))
+@
+\vspace{-2.25\baselineskip}
+\begin{center}
+\includegraphics[width=1.0\textwidth,keepaspectratio]{figures/MULTITRADESTATS-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Individual asset returns}
+<<echo=FALSE>>=
+options(width=78)
+@
+<<IASSRET,cache=FALSE>>=
+rets.multi <- PortfReturns("multiAsset.bb1")
+colnames(rets.multi) <- sort(symbols)
+round(tail(rets.multi,5),6)
+chart.CumReturns(rets.multi, colorset= rich10equal, legend.loc = "topleft",
+  main="SPDR Cumulative Returns",minor.ticks=FALSE)
+@
+<<echo=FALSE>>=
+options(width=81)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{Cumulative returns by asset} \vm
+\begin{center}
+\includegraphics[width=0.95\textwidth,keepaspectratio]{figures/IASSRET-1}
 \end{center}
 \end{frame}
 
@@ -1174,7 +1273,7 @@ add.rule("bbands",name='ruleSignal',
 @
 \begin{itemize}
   \item Belongs to orderset \texttt{ocolong}
-  \item Rule type is '\texttt{chain}' and parent is '\texttt{LongEntry}'
+  \item Rule type is \texttt{'chain'} and parent is 'LongEntry'
 \end{itemize}
 \end{frame}
 
@@ -1200,7 +1299,7 @@ add.rule("bbands", name = 'ruleSignal',
 @
 \begin{itemize}
   \item Belongs to orderset \texttt{ocolong}
-  \item Rule type is '\texttt{chain}' and parent is '\texttt{LongEntry}'
+  \item Rule type is \texttt{'chain'} and parent is 'LongEntry'
 \end{itemize}
 \end{frame}
 
@@ -1305,7 +1404,7 @@ The following functions implement parameter optimization in quantstrat: \vb
 args(add.distribution)
 @
 <<>>=
-stopLossPercentRange <- seq(0.01,0.05,by=0.01)
+stopLossPercentRange <- seq(0.01,0.10,by=0.01)
 @
 <<results='hide'>>=
 add.distribution("bbands",
@@ -1424,7 +1523,7 @@ names(results)
 \frametitle{Heatmaps of strategy performance}
 <<PROFITMDDHEAT,fig.width=7,fig.height=7,dev='png',dpi=300>>=
 z <- tapply(X=results$tradeStats$Profit.To.Max.Draw,
-  INDEX=list(results$tradeStats$TrailingLONG,results$tradeStats$StopLossLONG),
+  INDEX=list(results$tradeStats$StopLossTrailingDist,results$tradeStats$StopLossLongDist),
   FUN=median)
 x <- as.numeric(rownames(z))
 y <- as.numeric(colnames(z))
@@ -1446,12 +1545,25 @@ title("Return to MaxDrawdown")
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
-\frametitle{\textcolor{purple}{Computational Finance and Risk Management}}
-\begin{center}
-\includegraphics[width=0.75\textwidth,keepaspectratio]{images/CFRM_Logo.png} \\ \vb
-\url{http://depts.washington.edu/compfin}
-\end{center}
+\frametitle{Lecture references}
+\begin{itemize}
+  \item TradeAnalytics project page on R-forge:\\
+  \url{http://r-forge.r-project.org/projects/blotter/}
+  \begin{itemize}
+    \item documents and demos for:
+    \begin{itemize}
+      \item blotter package
+      \item quantstrat package\\
+    \end{itemize}
+  \end{itemize} \vb
+  \item Using quantstrat by Jan Humme \& Brian Peterson\\
+  {\footnotesize \url{http://www.rinfinance.com/agenda/2013/workshop/Humme+Peterson.pdf} \vb}
+  \item R-SIG-FINANCE:\\
+  \url{https://stat.ethz.ch/mailman/listinfo/r-sig-finance} \vb
+\end{itemize}
+\footnotetext[2]{demos are located in the directory: \texttt{.../R-3.x.x/library/quantstrat/demo}}
 \end{frame}
+
 
 \end{document}
 
