@@ -59,10 +59,12 @@ options(width=81,continue=" ",digits=8)
 %\frame{\titlepage}
 \begin{frame}
 \vb
-\frametitle{\textcolor{purple}{Computational Finance and Risk Management}} \vm
+\frametitle{\textcolor{purple}{Computational Finance and Risk Management}} \vspace{-1.0\baselineskip}
 \begin{center}
-\includegraphics[width=0.5\textwidth,keepaspectratio]{images/stockMarket.jpg} \\ \vspace{1.0\baselineskip}
-\LARGE {\textbf{Getting started with quantstrat}} \\ \vspace{1.0\baselineskip}
+\includegraphics[width=0.3\textwidth,keepaspectratio]{images/stockMarket.jpg} \\ \vspace{1.0\baselineskip}
+\huge {\textbf{Getting started with quantstrat}} \\ \vspace{1.0\baselineskip}
+\normalsize{\url{https://github.com/gyollin/quantstrat-tutorial.git}} \\
+\vspace{2.0\baselineskip}
 \large{Guy Yollin} \\ \vq
 \scriptsize{University of Washington} \\ \vh
 \large{Joshua Ulrich} \\ \vq
