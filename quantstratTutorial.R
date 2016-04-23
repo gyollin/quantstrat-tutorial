@@ -1,6 +1,6 @@
 ## ----echo=FALSE----------------------------------------------------------
 #########################################################################
-# Copyright (C) 2011-2015 Guy Yollin                                    #
+# Copyright (C) 2011-2016 Guy Yollin                                    #
 # License: http://www.gnu.org/licenses/gpl.html GPL version 2 or higher #
 #########################################################################
 
@@ -28,6 +28,91 @@ options(width=81,continue=" ",digits=8)
 ## install.packages("FinancialInstrument", repos = "http://R-Forge.R-project.org")
 ## install.packages("blotter", repos = "http://R-Forge.R-project.org")
 ## install.packages("quantstrat", repos = "http://R-Forge.R-project.org")
+
+## ----eval=FALSE----------------------------------------------------------
+## getSymbols(Symbols = NULL, env = parent.frame(), src = "yahoo",
+##   auto.assign = getOption('getSymbols.auto.assign',TRUE), ...)
+
+## ----eval=FALSE----------------------------------------------------------
+## getSymbols.yahoo(Symbols, env, return.class = 'xts', index.class  = 'Date',
+##   from = "2007-01-01", to = Sys.Date(), ...)
+
+## ----cache=FALSE,size='tiny'---------------------------------------------
+library(quantmod)
+ls()
+
+## ----results='hide',size='tiny'------------------------------------------
+getSymbols("^GSPC")
+
+## ----size='tiny'---------------------------------------------------------
+ls()
+class(GSPC)
+class(index(GSPC))
+dim(GSPC)
+
+## ----echo=FALSE----------------------------------------------------------
+options(width=120)
+
+## ----size='tiny'---------------------------------------------------------
+tail(GSPC,4)
+tail(Cl(GSPC),4)
+tail(Ad(GSPC),4)
+
+## ----echo=FALSE----------------------------------------------------------
+options(width=81)
+
+## ----eval=FALSE----------------------------------------------------------
+## chartSeries(x, type = c("auto", "candlesticks", "matchsticks",
+##     "bars", "line"), subset = NULL, show.grid = TRUE, name = NULL,
+##     time.scale = NULL, log.scale = FALSE, TA = "addVo()", TAsep = ";",
+##     line.type = "l", bar.type = "ohlc", theme = chartTheme("black"),
+##     layout = NA, major.ticks = "auto", minor.ticks = TRUE, yrange = NULL,
+##     plot = TRUE, up.col, dn.col, color.vol = TRUE, multi.col = FALSE, ...)
+
+## ----GSPC1,cache=FALSE---------------------------------------------------
+chartSeries(GSPC,subset="2015",theme="white")
+
+## ----GSPC0,cache=FALSE,size='tiny'---------------------------------------
+whiteTheme <- chartTheme("white")
+names(whiteTheme)
+whiteTheme$bg.col <- "white"
+whiteTheme$dn.col <- "pink"
+whiteTheme$up.col <- "lightgreen"
+whiteTheme$border <- "lightgray"
+x <- chartSeries(GSPC,subset="last 3 months",theme=whiteTheme,TA=NULL)
+class(x)
+
+## ----size='tiny'---------------------------------------------------------
+myStr <- "7/4/2014"
+class(myStr)
+args(getS3method("as.Date","character"))
+myDate <- as.Date(myStr,format="%m/%d/%Y")
+myDate
+class(myDate)
+as.numeric(myDate)
+
+## ------------------------------------------------------------------------
+format(myDate,"%m/%d/%Y")
+format(myDate,"%m/%d/%y")
+format(myDate,"%Y%m%d")
+
+## ----size='tiny'---------------------------------------------------------
+d <- Sys.time()
+class(d)
+unclass(d)
+sapply(unclass(as.POSIXlt(d)), function(x) x)
+
+## ----GSPC2,cache=FALSE---------------------------------------------------
+chartSeries(GSPC["2015"],theme=whiteTheme,name="S&P 500")
+
+## ----GSPC3,cache=FALSE---------------------------------------------------
+chartSeries(GSPC["2015/2016"],theme=whiteTheme,name="S&P 500")
+
+## ----GSPC4,cache=FALSE---------------------------------------------------
+chartSeries(GSPC["2015-10::2016-03"],theme=whiteTheme,name="S&P 500")
+
+## ----GSPC5,cache=FALSE---------------------------------------------------
+chartSeries(GSPC["201506::"],theme=whiteTheme,name="S&P 500")
 
 ## ------------------------------------------------------------------------
 library(PerformanceAnalytics)

@@ -27,14 +27,14 @@
 }
 
 \title{Getting started with quantstrat}
-\author{\href{http://faculty.washington.edu/gyollin/}{Guy Yollin}}
-\date{R/Finance 2015}
-\institute[Copyright \copyright \ 2015]{}
+\author{\href{http://www.r-programming.org}{Guy Yollin}}
+\date{Tutorial April 2016}
+\institute[Copyright \copyright \ 2016]{}
 %\logo{\includegraphics[width=0.25in]{logo}}
 
 <<echo=FALSE>>=
 #########################################################################
-# Copyright (C) 2011-2015 Guy Yollin                                    #
+# Copyright (C) 2011-2016 Guy Yollin                                    #
 # License: http://www.gnu.org/licenses/gpl.html GPL version 2 or higher #
 #########################################################################
 @
@@ -54,7 +54,7 @@ options(width=81,continue=" ",digits=8)
 
 \begin{document}
 \normalem
-\lstset{language=Pascal,basicstyle=\scriptsize,tabsize=2}
+\lstset{language=R,basicstyle=\scriptsize,tabsize=2}
 
 %\frame{\titlepage}
 \begin{frame}
@@ -66,9 +66,7 @@ options(width=81,continue=" ",digits=8)
 \normalsize{\url{https://github.com/gyollin/quantstrat-tutorial.git}} \\
 \vspace{2.0\baselineskip}
 \large{Guy Yollin} \\ \vq
-\scriptsize{University of Washington} \\ \vh
-\large{Joshua Ulrich} \\ \vq
-\scriptsize{DV Trading}
+\scriptsize{www.r-programming.org}
 \end{center}
 \end{frame}
 
@@ -91,65 +89,41 @@ options(width=81,continue=" ",digits=8)
 \end{frame}
 
 \begin{frame}
-\frametitle{Guy Yollin}
+\frametitle{Guy Yollin} \vm
 \begin{itemize}
     \item{Professional Experience}
     \begin{itemize}
-      \item{Software Engineering}
+      \item{Data Science roles}
         \begin{itemize}
+        \item{Milliman}
         \item{r-programming.org}
         \item{Insightful Corporation}
-        \item{Electro Scientific Industries, Vision Products Division}
         \end{itemize}
-      \item{Hedge Fund}
+      \item{Hedge Fund roles}
         \begin{itemize}
           \item{Rotella Capital Management}
           \item{J.E. Moody, LLC}
         \end{itemize}
-      \item{Academic}
+      \item{Software Engineering roles}
+        \begin{itemize}
+        \item{Electro Scientific Industries, Vision Products Division}
+        \item{Cybernetic Systems \& Automation, Inc.}
+        \end{itemize}
+      \item{Academic roles}
         \begin{itemize}
           \item{University of Washington}
           \item{Oregon Graduate Institute}
         \end{itemize}
-      \end{itemize} \vh
+      \end{itemize} \vq
     \item{Education}
     \begin{itemize}
         \item{Oregon Graduate Institute, Computational Finance}
         \item{Drexel University, Electrical Engineering}
-    \end{itemize}\vh
+    \end{itemize}\vq
     \item{Contact Info}
     \begin{itemize}
-        \item{\url{gyollin@uw.edu}}
+        \item{\url{gyollin@r-programming.org}}
         \item{\url{http://www.linkedin.com/in/guyyollin}}
-    \end{itemize}
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Joshua Ulrich}
-\begin{itemize}
-  \item{Professional Experience}
-    \begin{itemize}
-      \item{Programming}
-        \begin{itemize}
-          \item{fossfinance.com}
-          \item{R packages: TTR, xts, quantmod, blotter, quantstrat, pack, LSPM}
-        \end{itemize}  %% Programming
-      \item{Finance}
-        \begin{itemize}
-          \item{DV Trading}
-          \item{Enterprise Bank \& Trust}
-          \item{Wells Fargo Home Mortgage}
-        \end{itemize}  %% Finance
-    \end{itemize}\vh   %% Professional experience
-  \item{Education}
-    \begin{itemize}
-        \item{University of Missouri--St. Louis, Economics}
-    \end{itemize}\vh
-  \item{Contact Info}
-    \begin{itemize}
-        \item{\url{josh.m.ulrich@gmail.com}}
-        \item{\url{http://about.me/joshuaulrich}}
     \end{itemize}
 \end{itemize}
 \end{frame}
@@ -161,7 +135,7 @@ options(width=81,continue=" ",digits=8)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Introduction}
+\section{Preliminaries: quantitative analysis packages}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -171,6 +145,476 @@ options(width=81,continue=" ",digits=8)
 \includegraphics[width=0.95\textwidth,keepaspectratio]{images/quantAnalPackageHierarchy}
 \end{center}
 \end{frame}
+
+\begin{frame}
+\frametitle{The zoo package}
+The \texttt{zoo} package provides an infrastructure for regularly-spaced and irregularly-space time series \\ \vh
+\textmd{Key functions:}
+\begin{mydescription}{aggregate}
+  \item [zoo] create a zoo time series object
+  \item [merge] merges time series (automatically handles of time alignment)
+  \item [aggregate] create coarser resolution time series with summary statistics
+  \item [rollapply] calculate rolling window statistics
+  \item [read.zoo] read a text file into a zoo time series object
+\end{mydescription} \vh
+\textmd{Authors:}
+\begin{itemize}
+  \item Achim Zeileis
+  \item Gabor Grothendieck
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The xts package}
+The \texttt{xts} package extends the zoo time series class with fine-grained time indexes, interoperability with other R time series classes, and user defined attributes \\ \vh
+\textmd{Key functions:}
+\begin{mydescription}{align.time}
+  \item [xts] create an xts time series object
+  \item [align.time] align time series to a coarser resolution
+  \item [to.period] convert time series data to an OHLC series
+  \item [ [.xts ] subset time series
+\end{mydescription} \vh
+\textmd{Authors:}
+\begin{itemize}
+  \item Jeffrey Ryan
+  \item Josh Ulrich
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The TTR package}
+The \texttt{TTR} package is a comprehensive collection of technical analysis indicators for R \\ \vh
+\textmd{Key features:}
+\begin{itemize}
+  \item moving averages
+  \item oscillators
+  \item price channels
+  \item trend indicators
+\end{itemize} \vh
+\textmd{Author:}
+\begin{itemize}
+  \item Joshua Ulrich
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The quantmod package}
+The \texttt{quantmod} package for R is designed to assist the quantitative trader in the development, testing, and deployment of statistically based trading models. \\ \vh
+\textmd{Key functions:}
+\begin{mydescription}{chartSeries}
+  \item [getSymbols] load or download price data
+  \begin{itemize}
+    \item Yahoo Finance / Google Finance
+    \item FRED
+    \item Oanda
+    \item csv, RData
+    \item MySQL, SQLite
+  \end{itemize}
+  \item [chartSeries] charting tool to create standard financial charts
+\end{mydescription} \vh
+\textmd{Author:}
+\begin{itemize}
+  \item Jeffrey Ryan
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Install trading system development packages}
+<<eval=FALSE>>=
+#
+# install these packages from CRAN (or r-forge)
+#
+install.packages("xts")
+install.packages("PerformanceAnalytics")
+install.packages("quantmod")
+install.packages("TTR")
+#
+# Install these package from r-forge
+#
+install.packages("FinancialInstrument", repos = "http://R-Forge.R-project.org")
+install.packages("blotter", repos = "http://R-Forge.R-project.org")
+install.packages("quantstrat", repos = "http://R-Forge.R-project.org")
+@
+\begin{itemize}
+  \item R-Forge packages can be installed by setting the repos argument to \url{http://R-Forge.R-project.org}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Preliminaries: time-series objects}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}
+\frametitle{Time series data}
+\begin{mydefinition}{Time series}
+A \emph{time series} is a sequence of \emph{ordered} data points measured at specific points in time
+\end{mydefinition}
+\vh
+\begin{mydefinition}{Time series object}
+A time series object in R is a \emph{compound data structure} that includes a data matrix as well as a vector of associated time stamps
+\end{mydefinition}
+\vh
+\begin{center}
+\begin{tabular}{ l | l | l }
+  \textbf{class} & \textbf{package} & \textbf{overview} \\
+  \hline
+  \texttt{ts} & stats & regularly spaced time series \\
+  \texttt{mts} & stats & multiple regularly spaced time series \\
+  \texttt{zoo} & zoo & reg/irreg and arbitrary time stamp classes \\
+  \texttt{xts} & xts & an extension of the zoo class \\
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Components of an xts object}
+An \texttt{xts} object is composed of 3 components:\\ \vh
+\begin{mydescription}{Matrix}
+  \item [Index] a Data class or Time-Date class used for the time-stamp of observations \vh
+  \item [Matrix] the time series observations (univariate or multivariate)
+  \begin{itemize}
+    \item can be numeric, character, logical, etc. but must be homogeneous\vh
+  \end{itemize}
+  \item [Attr] hidden attributes and user attributes
+  \begin{itemize}
+    \item class of the index
+    \item format of the index
+    \item time zone
+  \end{itemize}
+\end{mydescription}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{getSymbols} function}
+The \texttt{getSymbols} function loads (downloads) historic price data \\ \vb
+\textcolor{Blue}{Usage:} \vm
+<<eval=FALSE>>=
+getSymbols(Symbols = NULL, env = parent.frame(), src = "yahoo",
+  auto.assign = getOption('getSymbols.auto.assign',TRUE), ...)
+@
+\textcolor{Blue}{Main arguments:}
+\begin{mydescription}{auto.assign}
+  \item [Symbols] a vector of ticker symbols
+  \item [env] where to create objects. Setting \texttt{env=NULL} is equal to \texttt{auto.assign=FALSE}
+  \item [src] source of data (yahoo)
+  \item [auto.assign] should results be returned or loaded to \texttt{env}
+  \item [...] additional parameters
+\end{mydescription} \vh
+\textcolor{Blue}{Return value:}
+\begin{myindentpar}{0.75cm}
+an object of type \texttt{return.class} depending on \texttt{env} and \texttt{auto.assign}
+\end{myindentpar}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{getSymbols.yahoo} function}
+The \texttt{getSymbols.yahoo} function downloads historic price data from \texttt{finance.yahoo.com} \\ \vb
+\textcolor{Blue}{Usage:} \vm
+<<eval=FALSE>>=
+getSymbols.yahoo(Symbols, env, return.class = 'xts', index.class  = 'Date',
+  from = "2007-01-01", to = Sys.Date(), ...)
+@
+\textcolor{Blue}{Main arguments:}
+\begin{mydescription}{return.class}
+  \item [return.class] class of returned object
+  \item [index.class] class of returned object index (xts only)
+  \item [...] additional parameters
+\end{mydescription} \vh
+\textcolor{Blue}{Return value:}
+\begin{myindentpar}{0.75cm}
+an object of type \texttt{return.class} depending on \texttt{env} and \texttt{auto.assign}
+\end{myindentpar}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{The \texttt{getSymbols} function} \vm
+<<cache=FALSE,size='tiny'>>=
+library(quantmod)
+ls()
+@
+\vm
+<<results='hide',size='tiny'>>=
+getSymbols("^GSPC")
+@
+\vm
+<<size='tiny'>>=
+ls()
+class(GSPC)
+class(index(GSPC))
+dim(GSPC)
+@
+\begin{itemize}
+  \item By default, the symbol was \emph{auto-assigned} to the parent environment
+\end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{The \texttt{getSymbols} function} \vm
+<<echo=FALSE>>=
+options(width=120)
+@
+<<size='tiny'>>=
+tail(GSPC,4)
+tail(Cl(GSPC),4)
+tail(Ad(GSPC),4)
+@
+<<echo=FALSE>>=
+options(width=81)
+@
+\begin{itemize}
+  \item Note that the symbol is prepended to columns names of the xts object; use extractor functions to access column data (e.g. \code{Cl(GSPC)})
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\texttt{quantmod} extractor functions}
+The \texttt{quantmod} package includes a number of functions to extract specific series from an \texttt{xts} object of market data: \\ \vh
+\begin{center}
+\begin{tabular}{ l l }
+  \textbf{Function} & \textbf{Description} \\ [0.5em] \hline
+  & \\ [-0.5em]
+  Op(x) & Get Open\\ [0.5em]
+  Hi(x) & Get High \\ [0.5em]
+  Lo(x) & Get Low \\ [0.5em]
+  Cl(x) & Get Close \\ [0.5em]
+  Vo(x) & Get Volume \\ [0.5em]
+  Ad(x) & Get Adjusted Close \\ [0.5em]
+  HLC(x) & Get High, Low, and Close \\ [0.5em]
+  OHLC(x) & Get Open, High, Low, and Close \\ [0.5em]
+\end{tabular}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{The \texttt{chartSeries} function}
+The \texttt{chartSeries} function creates financial charts \\ \vh
+\textcolor{Blue}{Usage:} \vm
+<<eval=FALSE>>=
+chartSeries(x, type = c("auto", "candlesticks", "matchsticks",
+    "bars", "line"), subset = NULL, show.grid = TRUE, name = NULL,
+    time.scale = NULL, log.scale = FALSE, TA = "addVo()", TAsep = ";",
+    line.type = "l", bar.type = "ohlc", theme = chartTheme("black"),
+    layout = NA, major.ticks = "auto", minor.ticks = TRUE, yrange = NULL,
+    plot = TRUE, up.col, dn.col, color.vol = TRUE, multi.col = FALSE, ...)
+@
+\textcolor{Blue}{Main arguments:}
+\begin{mydescription}{subset}
+  \item [x] an OHLC object
+  \item [type] style of chart to draw
+  \item [theme] a chart.theme object
+  \item [subset] xts style date subsetting argument
+  \item [TA] a vector of technical indicators and params
+\end{mydescription}
+\vh
+\textcolor{Blue}{Return value:}
+\begin{myindentpar}{0.75cm}
+a chob object
+\end{myindentpar}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{The \texttt{chartSeries} function}
+<<GSPC1,cache=FALSE>>=
+chartSeries(GSPC,subset="2015",theme="white")
+@
+\begin{center}
+\includegraphics[scale=0.5]{figures/GSPC1-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Customize a \texttt{chartSeries} plot}
+<<GSPC0,cache=FALSE,size='tiny'>>=
+whiteTheme <- chartTheme("white")
+names(whiteTheme)
+whiteTheme$bg.col <- "white"
+whiteTheme$dn.col <- "pink"
+whiteTheme$up.col <- "lightgreen"
+whiteTheme$border <- "lightgray"
+x <- chartSeries(GSPC,subset="last 3 months",theme=whiteTheme,TA=NULL)
+class(x)
+@
+\begin{itemize}
+  \item subset to last 3 months
+  \item totally white background
+  \item no volume sub-graph (\texttt{TA=NULL})
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{A \texttt{chartSeries} plot}
+\begin{center}
+\includegraphics[scale=0.6]{figures/GSPC0-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Date class}
+\vq
+A \texttt{Date} object is stored internally as the number of days since 1970-01-01
+<<size='tiny'>>=
+myStr <- "7/4/2014"
+class(myStr)
+args(getS3method("as.Date","character"))
+myDate <- as.Date(myStr,format="%m/%d/%Y")
+myDate
+class(myDate)
+as.numeric(myDate)
+@
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Date format string for \texttt{as.Date} and \texttt{format.Date}}
+\begin{mydescription}{\%Y}
+  \item [\%Y] Year with century
+  \item [\%y] Year without century (00-99)
+  \item [\%m] Month as decimal number (01-12)
+  \item [\%d] Day of the month as decimal number (01-31)
+\end{mydescription}
+<<>>=
+format(myDate,"%m/%d/%Y")
+format(myDate,"%m/%d/%y")
+format(myDate,"%Y%m%d")
+@
+\begin{itemize}
+  \item For comprehensive list of date/time conversion specifications, see help for \texttt{strptime} function
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Time-Date formatting strings}
+\begin{scriptsize}
+\begin{description}
+    \item[\code{\%a}]{Abbreviated weekday name in the current locale}
+    \item[\code{\%A}]{Full weekday name in the current locale}
+    \item[\code{\%b}]{Abbreviated month name in the current locale}
+    \item[\code{\%B}]{Full month name in the current locale}
+    \item[\code{\%c}]{Date and time.   Locale-specific on output}
+    \item[\code{\%C}]{Century (00--99): the integer part of the year divided by 100.}
+    \item[\code{\%d}]{Day of the month as decimal number (01--31).}
+    \item[\code{\%D}]{Date format such as \code{\%m/\%d/\%y}: ISO C99 says it should be that exact format.}
+    \item[\code{\%e}]{Day of the month as decimal number (1--31)}
+    \item[\code{\%F}]{Equivalent to \%Y-\%m-\%d (the ISO 8601 date format)}
+    \item[\code{\%g}]{The last two digits of the week-based year (see \code{\%V})}
+    \item[\code{\%G}]{The week-based year (see \code{\%V}) as a decimal number}
+    \item[\code{\%h}]{Equivalent to \code{\%b}}
+    \item[\code{\%H}]{Hours as decimal number (00--23)}
+    \item[\code{\%I}]{Hours as decimal number (01--12)}
+    \item[\code{\%j}]{Day of year as decimal number (001--366)}
+    \item[\code{\%m}]{Month as decimal number (01--12)}
+    \item[\code{\%M}]{Minute as decimal number (00--59)}
+\end{description}
+\end{scriptsize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Time-Date formatting strings (continued)}
+\begin{scriptsize}
+\begin{description}
+    \item[\code{\%n}]{Newline on output, arbitrary whitespace on input}
+    \item[\code{\%p}]{AM/PM indicator in the locale.  Used in conjunction with \code{\%I} and not with \code{\%H}}
+    \item[\code{\%r}]{The 12-hour clock time (using the locale's AM or PM)}
+    \item[\code{\%R}]{Equivalent to \code{\%H:\%M}}
+    \item[\code{\%S}]{Second as decimal number (00--61)}
+    \item[\code{\%T}]{Equivalent to \code{\%H:\%M:\%S}}
+    \item[\code{\%u}]{Weekday as a decimal number (1--7, Monday is 1)}
+    \item[\code{\%U}]{Week of the year as decimal number (00--53) using Sunday as the first day 1 of the week}
+    \item[\code{\%V}]{Week of the year as decimal number (00--53) as defined in ISO 8601}
+    \item[\code{\%w}]{Weekday as decimal number (0--6, Sunday is 0)}
+    \item[\code{\%W}]{Week of the year as decimal number (00--53) using Monday as the first day of week}
+    \item[\code{\%x}]{Date.  Locale-specific on output, \code{"\%y/\%m/\%d"} on input}
+    \item[\code{\%X}]{Time.  Locale-specific on output, \code{"\%H:\%M:\%S"} on input}
+    \item[\code{\%y}]{Year without century (00--99)}
+    \item[\code{\%Y}]{Year with century}
+    \item[\code{\%z}]{Signed offset in hours and minutes from UTC, so \code{-0800} is 8 hours behind UTC}
+    \item[\code{\%Z}]{(Output only.)  Time zone abbreviation as a character string (empty if not available)}
+\end{description}
+\end{scriptsize}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Date-Time classes}
+\begin{itemize}
+  \item A \texttt{POSIXct} object is a Date-Time object internally stored as the number of seconds since 1970-01-01
+  \item A \texttt{POSIXlt} object is a Date-Time object internally stored as 9 calendar and time components
+\end{itemize}
+<<size='tiny'>>=
+d <- Sys.time()
+class(d)
+unclass(d)
+sapply(unclass(as.POSIXlt(d)), function(x) x)
+@
+\end{frame}
+
+\begin{frame}
+\frametitle{xts subsetting}
+xts time series objects can be easily subset: \\ \vh
+\begin{itemize}
+  \item Date and time organized from most significant to least significant
+  \begin{itemize}
+    \item CCYY-MM-DD HH:MM:SS[.s]
+  \end{itemize} \vh
+  \item Separators can be omitted
+  \begin{itemize}
+    \item CCYYMMDDHHMMSS
+  \end{itemize} \vh
+  \item Intervals can be designated with the "/" or "::"
+  \begin{itemize}
+    \item 2010/2011
+    \item 2011-04::2011-07
+    \item ::Sys.time()
+    \item 2000::
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{xts subsetting}
+<<GSPC2,cache=FALSE>>=
+chartSeries(GSPC["2015"],theme=whiteTheme,name="S&P 500")
+@
+\begin{center}
+\includegraphics[scale=0.5]{figures/GSPC2-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{xts subsetting}
+<<GSPC3,cache=FALSE>>=
+chartSeries(GSPC["2015/2016"],theme=whiteTheme,name="S&P 500")
+@
+\begin{center}
+\includegraphics[scale=0.5]{figures/GSPC3-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{xts subsetting}
+<<GSPC4,cache=FALSE>>=
+chartSeries(GSPC["2015-10::2016-03"],theme=whiteTheme,name="S&P 500")
+@
+\begin{center}
+\includegraphics[scale=0.5]{figures/GSPC4-1}
+\end{center}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{xts subsetting}
+<<GSPC5,cache=FALSE>>=
+chartSeries(GSPC["201506::"],theme=whiteTheme,name="S&P 500")
+@
+\begin{center}
+\includegraphics[scale=0.5]{figures/GSPC5-1}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction to blotter and quantstrat}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}
 \frametitle{About \texttt{blotter} and \texttt{quantstrat}}
@@ -227,73 +671,6 @@ Authors
 \begin{itemize}
   \item Peter Carl, Brian Peterson
   \item Joshua Ulrich, Jan Humme
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{The TTR package}
-The \texttt{TTR} package is a comprehensive collection of technical analysis indicators for R \\ \vh
-\textmd{Key features:}
-\begin{itemize}
-  \item moving averages
-  \item oscillators
-  \item price channels
-  \item trend indicators
-\end{itemize} \vh
-\textmd{Author:}
-\begin{itemize}
-  \item Joshua Ulrich
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Selected technical analysis indicators in TTR}
-\begin{tiny}
-\begin{center}
-\begin{tabular}{ l | l || l | l }
-  \textbf{Function} & \textbf{Description} & \textbf{Function} & \textbf{Description} \\ [0.5em] \hline
-  & & & \\ [-0.5em]
-  stoch & stochastic oscillator & ADX & Directional Movement Index \\ [0.5em]
-  aroon & Aroon indicator & ATR & Average True Range \\ [0.5em]
-  BBands & Bollinger bands & CCI & Commodity Channel Index \\ [0.5em]
-  chaikinAD & Chaikin Acc/Dist & chaikinVolatility & Chaikin Volatility \\ [0.5em]
-  ROC & rate of change & momentum & momentum indicator \\ [0.5em]
-  CLV & Close Location Value & CMF & Chaikin Money Flow \\ [0.5em]
-  CMO & Chande Momentum Oscillator & SMA & simple moving average \\ [0.5em]
-  EMA & exponential moving average & DEMA & double exp mov avg \\ [0.5em]
-  VWMA & volume weighted MA & VWAP & volume weighed avg price \\ [0.5em]
-  DonchianChannel & Donchian Channel & DPO & Detrended Price Oscillator \\ [0.5em]
-  EMV & Ease of Movement Value & volatility & volatility estimators \\ [0.5em]
-  MACD & MA converge/diverge & MFI & Money Flow Index \\ [0.5em]
-  RSI & Relative Strength Index & SAR & Parabolic Stop-and-Reverse \\ [0.5em]
-  TDI & Trend Detection Index & TRIX & Triple Smoothed Exponential Osc \\ [0.5em]
-  VHF & Vertical Horizontal Filter & williamsAD & Williams Acc/Dist \\ [0.5em]
-  WPR & William's \% R & ZigZag & Zig Zag trend line \\ [0.5em]
-\end{tabular}
-\end{center}
-\end{tiny}
-\footnotetext{see Technical Analysis from A to Z by Steven Achelis}
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Install trading system development packages}
-<<eval=FALSE>>=
-#
-# install these packages from CRAN (or r-forge)
-#
-install.packages("xts")
-install.packages("PerformanceAnalytics")
-install.packages("quantmod")
-install.packages("TTR")
-#
-# Install these package from r-forge
-#
-install.packages("FinancialInstrument", repos = "http://R-Forge.R-project.org")
-install.packages("blotter", repos = "http://R-Forge.R-project.org")
-install.packages("quantstrat", repos = "http://R-Forge.R-project.org")
-@
-\begin{itemize}
-  \item R-Forge packages can be installed by setting the repos argument to \url{http://R-Forge.R-project.org}
 \end{itemize}
 \end{frame}
 
